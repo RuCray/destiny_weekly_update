@@ -27,10 +27,10 @@ class DataHelper
       # to expand using a smaller list, match against EXTENDED_WEAPON_STATS
       for extHash in constants.EXTENDED_WEAPON_STATS
         s = response.definitions.items[hash].stats[extHash]
-        itemStats.push s
+        itemStats.push(s) if s?
 
     statHashes = constants.STAT_HASHES
-    for stat in itemStats when stat.statHash of statHashes
+    for stat in itemStats when stat?.statHash of statHashes
         stats[statHashes[stat.statHash]] = stat.value
 
     prefix = 'https://www.bungie.net'
