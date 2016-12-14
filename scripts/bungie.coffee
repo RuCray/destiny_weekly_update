@@ -139,7 +139,7 @@ sendHelp = (robot, res) ->
 
 
 checkNetwork = (network) ->
-  xbox = ['xbox', 'xb1', 'xbox1', 'xboxone', 'xbox360', 'xb360', 'xbone']
+  xbox = ['xbox', 'xb1', 'xbox1', 'xboxone', 'xbox360', 'xb360', 'xbone', 'xb']
   playstation = ['playstation', 'ps', 'ps3', 'ps4', 'playstation3', 'playstation4']
   if network in xbox
     return '1'
