@@ -39,12 +39,10 @@ module.exports = (robot) ->
     else
       data['activityKey'] = activityKey
 
-    getPublicWeeklyActivity(res, data.activityKey).then (activityDetails) -> 
+    getPublicWeeklyActivity(res, data.activityKey).then (activityDetails) ->
 
-      payload = 
+      payload =
         attachments: activityDetails
-
-      console.log payload
 
       # robot.emit 'slack-attachment', payload
 
@@ -85,7 +83,7 @@ module.exports = (robot) ->
 
     #         robot.emit 'slack-attachment', payload
 
-    
+
   robot.respond /help/i, (res) ->
     sendHelp(robot, res)
 
@@ -262,26 +260,17 @@ getPublicWeeklyActivity = (bot, activityKey) ->
   endpoint = "Advisors/V2"
   makeRequest bot, endpoint, null, (err, response) ->
 
-    activity = response.data.activities[activityKey]
-
-    activityDetails = {
-      displayName: activity.display.advisorTypeCategory
-      modifiers: activity.extended.skullCategories
-      status: activity.status 
-    }
-
+    activityDetails = dataHelper.serializeActvity(response, activityKey)
     if activityKey not in constants.FURTHER_DETAILS
-      console.log("activityDetails = #{activityDetails}")
       return deferred.resolve(activityDetails)
 
-    parceActivityHash(bot, activity.display.activityHash).then (details) ->
+    parseActivityHash(bot, activityDetails.activityHash).then (details) ->
       combinedDetails = Object.assign {}, activityDetails, details
-      console.log("combinedDetails = #{combinedDetails}")
       deferred.resolve(combinedDetails)
 
   deferred.promise
 
-parceActivityHash = (bot, activityHash) -> 
+parseActivityHash = (bot, activityHash) ->
   deferred = new Deferred()
   endpoint = "Manifest/Activity/#{activityHash}"
 
@@ -290,11 +279,7 @@ parceActivityHash = (bot, activityHash) ->
     if err
       return deferred.resolve(err)
 
-    activity = response.data.activity
-    details = 
-      activityName: activity.activityName
-      activityDescription: activity.activityDescription
-    deferred.resolve(details)
+    deferred.resolve(dataHelper.serializeActivityDetails(response))
 
   deferred.promise
 

@@ -7,16 +7,15 @@ module.exports =
     'strike',
     'story',
     'raid',
-    'ib',
     'xur'
   ]
 
   FURTHER_DETAILS: [
-    'crucible',
+    'weeklycrucible',
     'nightfall',
-    'strike',
-    'story',
-    'raid'
+    'heroicstrike',
+    'weeklystory',
+    'weeklyfeaturedraid'
   ]
 
   ACTIVITY_KEYS: 
@@ -27,7 +26,6 @@ module.exports =
     strike: 'heroicstrike',
     story: 'weeklystory',
     raid: 'weeklyfeaturedraid',
-    ib: 'ironbanner',
     xur: 'xur'
 
   TYPES:

@@ -111,4 +111,24 @@ class DataHelper
         stats.push "#{statName}: #{statValue}"
     stats.join ', '
 
+  'serializeActvity': (response, activityKey) ->
+    activity = response.data.activities[activityKey]
+
+    details =
+      displayName: activity.display.advisorTypeCategory
+      status: activity.status
+      activityHash: activity.display.activityHash
+
+    if activity.extended && activity.extended.skullCategories
+      details['modifiers'] = activity.extended.skullCategories
+
+    return details
+
+  'serializeActivityDetails': (response) ->
+    activity = response.data.activity
+    activityName: activity.activityName
+    activityDescription: activity.activityDescription
+
+  'parseActivityDetails': (activityDetails) ->
+
 module.exports = DataHelper
