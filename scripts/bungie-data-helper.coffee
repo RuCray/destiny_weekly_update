@@ -1,5 +1,5 @@
 request = require('request')
-constants = require('./showoff-constants.coffee')
+constants = require('./constants.coffee')
 
 class DataHelper
   'serializeFromApi': (response) ->
@@ -110,5 +110,50 @@ class DataHelper
     for statName, statValue of item.stats
         stats.push "#{statName}: #{statValue}"
     stats.join ', '
+
+  'serializeActvity': (response, activityKey) ->
+    activity = response.data.activities[activityKey]
+
+    details =
+      displayName: activity.display.advisorTypeCategory
+      status: activity.status
+      activityHash: activity.display.activityHash
+
+    if activity.extended && activity.extended.skullCategories
+      details['modifiers'] = activity.extended.skullCategories
+
+    return details
+
+  'serializeActivityDetails': (response) ->
+    activity = response.data.activity
+    activityName: activity.activityName
+    activityDescription: activity.activityDescription
+
+  'parseActivityDetails': (activityDetails) ->
+    modifiers = []
+    if activityDetails.modifiers
+      for mod in activityDetails.modifiers
+        for skull in mod.skulls
+          modifiers.push({
+              title: skull.displayName,
+              value: skull.description,
+              short: false
+          })
+
+    title = if activityDetails.activityName then activityDetails.activityName else activityDetails.displayName
+    attachment =
+      fallback: title
+      title: title
+
+    if activityDetails.activityName
+      attachment['author_name'] = activityDetails.displayName
+
+    if activityDetails.activityDescription
+      attachment['text'] = activityDetails.activityDescription
+
+    if modifiers.length > 0
+      attachment['fields'] = modifiers
+
+    return attachment
 
 module.exports = DataHelper

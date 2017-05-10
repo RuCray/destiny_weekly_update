@@ -1,8 +1,8 @@
 {
-  "name": "showoff",
+  "name": "destiny_weekly_bot",
   "version": "0.0.0",
   "private": true,
-  "author": "Peter Phillips <phillipspc@gmail.com>",
+  "author": "RuCray <rucray.iosdev@gmail.com>",
   "description": "A slack bot to show off Destiny items.",
   "dependencies": {
     "coffee-script": "^1.10.0",
