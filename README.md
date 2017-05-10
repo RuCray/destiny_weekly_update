@@ -6,13 +6,12 @@ This project was originally based off of [showoff](https://github.com/phillipspc
 ### Usage
 
 Available commands are:
-`coe`
-`trials`
-`crucible`
-`nightfall`
-`strike`
-`story`
-`raid`
+- `coe`
+- `crucible`
+- `nightfall`
+- `strike`
+- `story`
+- `raid`
 
 ### Testing it out
 If you want to test out the bot before using it in a public channel, try sending it a direct message. You do not need "@bot-name" when you are messaging the bot directly, just the inputs.
