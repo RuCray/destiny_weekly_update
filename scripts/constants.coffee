@@ -6,8 +6,7 @@ module.exports =
     'nightfall',
     'strike',
     'story',
-    'raid',
-    'xur'
+    'raid'
   ]
 
   FURTHER_DETAILS: [
@@ -18,7 +17,7 @@ module.exports =
     'weeklyfeaturedraid'
   ]
 
-  ACTIVITY_KEYS: 
+  ACTIVITY_KEYS:
     coe: 'elderchallenge',
     trials: 'trials',
     crucible: 'weeklycrucible',
@@ -26,6 +25,7 @@ module.exports =
     strike: 'heroicstrike',
     story: 'weeklystory',
     raid: 'weeklyfeaturedraid',
+    ironbanner: 'ironbanner',
     xur: 'xur'
 
   TYPES:

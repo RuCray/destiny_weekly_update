@@ -42,9 +42,12 @@ module.exports = (robot) ->
     getPublicWeeklyActivity(res, data.activityKey).then (activityDetails) ->
 
       payload =
-        attachments: activityDetails
+        message: res.message
+        attachments: [dataHelper.parseActivityDetails(activityDetails)]
 
-      # robot.emit 'slack-attachment', payload
+      console.log payload
+
+      robot.emit 'slack-attachment', payload
 
     # # interprets input based on length
     # # if 3 elements, assume: gamertag, network, bucket

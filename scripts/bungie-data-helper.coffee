@@ -130,5 +130,29 @@ class DataHelper
     activityDescription: activity.activityDescription
 
   'parseActivityDetails': (activityDetails) ->
+    modifiers = []
+    for mod in activityDetails.modifiers
+      for skull in mod.skulls
+        modifiers.push({
+            title: skull.displayName,
+            value: skull.description,
+            short: false
+        })
+
+    title = if activityDetails.activityName then activityDetails.activityName else activityDetails.displayName
+    attachment =
+      fallback: title
+      title: title
+
+    if activityDetails.activityName
+      attachment['author_name'] = activityDetails.displayName
+
+    if activityDetails.activityDescription
+      attachment['text'] = activityDetails.activityDescription
+
+    if modifiers.length > 0
+      attachment['fields'] = modifiers
+
+    return attachment
 
 module.exports = DataHelper
