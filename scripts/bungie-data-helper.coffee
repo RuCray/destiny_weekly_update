@@ -131,13 +131,14 @@ class DataHelper
 
   'parseActivityDetails': (activityDetails) ->
     modifiers = []
-    for mod in activityDetails.modifiers
-      for skull in mod.skulls
-        modifiers.push({
-            title: skull.displayName,
-            value: skull.description,
-            short: false
-        })
+    if activityDetails.modifiers
+      for mod in activityDetails.modifiers
+        for skull in mod.skulls
+          modifiers.push({
+              title: skull.displayName,
+              value: skull.description,
+              short: false
+          })
 
     title = if activityDetails.activityName then activityDetails.activityName else activityDetails.displayName
     attachment =

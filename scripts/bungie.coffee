@@ -45,8 +45,6 @@ module.exports = (robot) ->
         message: res.message
         attachments: [dataHelper.parseActivityDetails(activityDetails)]
 
-      console.log payload
-
       robot.emit 'slack-attachment', payload
 
     # # interprets input based on length

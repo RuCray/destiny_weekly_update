@@ -1,12 +1,11 @@
 module.exports =
   COMMANDS: [
     'coe',
-    'trials',
     'crucible',
     'nightfall',
-    'strike',
-    'story',
     'raid'
+    'story',
+    'strike',
   ]
 
   FURTHER_DETAILS: [
