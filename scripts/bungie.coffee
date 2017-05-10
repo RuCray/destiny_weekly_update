@@ -2,15 +2,10 @@ require('dotenv').load()
 Deferred = require('promise.coffee').Deferred
 Q = require('q')
 DataHelper = require './bungie-data-helper.coffee'
-constants = require './showoff-constants.coffee'
+constants = require './constants.coffee'
 
 dataHelper = new DataHelper
-helpText = "Use the \"help\" command to learn about using the bot, or check out the full README here: https://github.com/phillipspc/showoff/blob/master/README.md"
-
-if process.env.SHOW_ARMOR && process.env.SHOW_ARMOR isnt 'true'
-  SHOW_ARMOR = false
-else
-  SHOW_ARMOR = true
+helpText = "Use the `help` command to learn about using the bot, or check out the full README here: https://github.com/RuCray/destiny_weekly_update"
 
 module.exports = (robot) ->
   # executes when any text is directed at the bot
@@ -31,55 +26,66 @@ module.exports = (robot) ->
 
     data = {}
 
-    # weapon slot should always be last input
+    # activity should always be last input
     el = input[input.length-1].toLowerCase()
-    bucket = getBucket(el)
-    if bucket is null
-      message = "Please use 'primary', 'special', or 'heavy' for the weapon slot.\n"
-      message += "Please use 'head', 'chest', 'arms', 'legs', or 'class' for the armor slot.\n" if SHOW_ARMOR
+    activityKey = constants.ACTIVITY_KEYS[el]
+    if !activityKey
+      message = "Available commands are:\n"
+      for command in constants.COMMANDS
+        message += "`#{command}`\n"
       message += "\n#{helpText}"
       sendError(robot, res, message)
       return
     else
-      data['bucket'] = bucket
+      data['activityKey'] = activityKey
 
-    # interprets input based on length
-    # if 3 elements, assume: gamertag, network, bucket
-    if input.length is 3
-      el = input[1].toLowerCase()
-      data['membershipType'] = checkNetwork(el)
-      data['displayName'] = input[0]
-    else if input.length is 2
-      el = input[0].toLowerCase()
-      data['membershipType'] = checkNetwork(el)
-      if data['membershipType'] is null
-        # assume first input was gamertag
-        data['displayName'] = input[0]
-      else
-        # assume gamertag not provided, use slack first name
-        data['displayName'] = res.message.user.slack.profile.first_name
-    else if input.length is 1
-      # assume only bucket was provided
-      data['membershipType'] = null
-      data['displayName'] = res.message.user.slack.profile.first_name
-    else
-      # catch all, but should never happen...
-      message = "Something didn't look right... #{helpText}"
-      sendError(robot, res, message)
-      return
+    getPublicWeeklyActivity(res, data.activityKey).then (activityDetails) -> 
 
-    tryPlayerId(res, data.membershipType, data.displayName, robot).then (player) ->
-      getCharacterId(res, player.platform, player.membershipId, robot).then (characterId) ->
-        getItemIdFromSummary(res, player.platform, player.membershipId, characterId, data.bucket, robot).then (itemInstanceId) ->
-          getItemDetails(res, player.platform, player.membershipId, characterId, itemInstanceId).then (item) ->
-            parsedItem = dataHelper.parseItemAttachment(item)
+      payload = 
+        attachments: activityDetails
 
-            payload =
-              message: res.message
-              attachments: parsedItem
+      console.log payload
 
-            robot.emit 'slack-attachment', payload
+      # robot.emit 'slack-attachment', payload
 
+    # # interprets input based on length
+    # # if 3 elements, assume: gamertag, network, bucket
+    # if input.length is 3
+    #   el = input[1].toLowerCase()
+    #   data['membershipType'] = checkNetwork(el)
+    #   data['displayName'] = input[0]
+    # else if input.length is 2
+    #   el = input[0].toLowerCase()
+    #   data['membershipType'] = checkNetwork(el)
+    #   if data['membershipType'] is null
+    #     # assume first input was gamertag
+    #     data['displayName'] = input[0]
+    #   else
+    #     # assume gamertag not provided, use slack first name
+    #     data['displayName'] = res.message.user.slack.profile.first_name
+    # else if input.length is 1
+    #   # assume only bucket was provided
+    #   data['membershipType'] = null
+    #   data['displayName'] = res.message.user.slack.profile.first_name
+    # else
+    #   # catch all, but should never happen...
+    #   message = "Something didn't look right... #{helpText}"
+    #   sendError(robot, res, message)
+    #   return
+
+    # tryPlayerId(res, data.membershipType, data.displayName, robot).then (player) ->
+    #   getCharacterId(res, player.platform, player.membershipId, robot).then (characterId) ->
+    #     getItemIdFromSummary(res, player.platform, player.membershipId, characterId, data.bucket, robot).then (itemInstanceId) ->
+    #       getItemDetails(res, player.platform, player.membershipId, characterId, itemInstanceId).then (item) ->
+    #         parsedItem = dataHelper.parseItemAttachment(item)
+
+    #         payload =
+    #           message: res.message
+    #           attachments: parsedItem
+
+    #         robot.emit 'slack-attachment', payload
+
+    
   robot.respond /help/i, (res) ->
     sendHelp(robot, res)
 
@@ -95,18 +101,12 @@ sendHelp = (robot, res) ->
     admin_message = ""
 
   # customizes help message depending on display options
-  if SHOW_ARMOR
-    options = "weapon/armor"
-    example1 = "primary"
-    example2 = "helmet"
-    example3 = "special"
-  else
-    options = "weapon"
-    example1 = "primary"
-    example2 = "special"
-    example3 = "heavy"
+  options = "weapon/armor"
+  example1 = "primary"
+  example2 = "helmet"
+  example3 = "special"
 
-  mdText = "To show off your #{options}, message the bot with your gamertag, network, and #{options} slot, separated by spaces.
+  mdText = "To show off your #{options}, message the bot with your gamertag, network, and #{options} activity, separated by spaces.
   The bot will always look at the *most recently played character* on your account.
   The standard usage looks like this: \n```@gunsmithbot: MyGamerTag xbox #{example1}```\n
   If you've set up your slack profile so that your *first name* matches your gamertag, you can omit this:```@gunsmithbot: playstation #{example2}```\n
@@ -115,7 +115,7 @@ sendHelp = (robot, res) ->
   in order for the bot to recognize the input properly.
   This is only required when inputting the gamertag manually however; spaces are fine in your slack first name.#{admin_message}\n\n
   _Keep that thing oiled, guardian._"
-  fallback = "To show off your #{options}, message the bot with your gamertag, network, and #{options} slot, separated by spaces.
+  fallback = "To show off your #{options}, message the bot with your gamertag, network, and #{options} activity, separated by spaces.
   The bot will always look at the *most recently played character* on your account.
   The standard usage looks like this: \n\"@gunsmithbot: MyGamerTag xbox #{example1}\"\n
   If you've set up your slack profile so that your FIRST NAME matches your gamertag, you can omit this:\"@gunsmithbot: playstation #{example2}\"\n
@@ -127,7 +127,7 @@ sendHelp = (robot, res) ->
 
   attachment =
     title: "Using the Gunsmith Bot"
-    title_link: "https://github.com/phillipspc/showoff/blob/master/README.md"
+    title_link: "https://github.com/RuCray/destiny_weekly_update"
     text: mdText
     fallback: fallback
     mrkdwn_in: ["text"]
@@ -147,20 +147,6 @@ checkNetwork = (network) ->
     return '2'
   else
     return null
-
-# returns bucketHash associated with each weapon/armor slot
-getBucket = (slot) ->
-  switch slot
-    when 'primary' then constants.TYPES.PRIMARY_WEAPON
-    when 'special', 'secondary' then constants.TYPES.SPECIAL_WEAPON
-    when 'heavy' then constants.TYPES.HEAVY_WEAPON
-    when 'ghost' then constants.TYPES.GHOST if SHOW_ARMOR
-    when 'head', 'helmet' then constants.TYPES.HEAD if SHOW_ARMOR
-    when 'chest' then constants.TYPES.CHEST if SHOW_ARMOR
-    when 'arm', 'arms', 'gloves', 'gauntlets' then constants.TYPES.ARMS if SHOW_ARMOR
-    when 'leg', 'legs', 'boots', 'greaves' then constants.TYPES.LEGS if SHOW_ARMOR
-    when 'class', 'mark', 'bond', 'cape', 'cloak' then constants.TYPES.CLASS_ITEMS if SHOW_ARMOR
-    else null
 
 # Sends error message as DM in slack
 sendError = (robot, res, message) ->
@@ -206,7 +192,7 @@ getPlayerId = (res, membershipType, displayName, robot) ->
   deferred = new Deferred()
   endpoint = "SearchDestinyPlayer/#{membershipType}/#{displayName}"
 
-  makeRequest res, endpoint, (response) ->
+  makeRequest res, endpoint, null, (err, response) ->
     playerId = null
     foundData = response[0]
 
@@ -221,7 +207,7 @@ getCharacterId = (bot, membershipType, playerId, robot) ->
   deferred = new Deferred()
   endpoint = "#{membershipType}/Account/#{playerId}"
 
-  makeRequest bot, endpoint, (response) ->
+  makeRequest bot, endpoint, null, (err, response) ->
     if !response
       robot.send {room: bot.message.user.name, "unfurl_media": false}, "Something went wrong, no characters found for this user. #{helpText}"
       deferred.reject()
@@ -240,7 +226,7 @@ getItemIdFromSummary = (bot, membershipType, playerId, characterId, bucket, robo
   deferred = new Deferred()
   endpoint = "#{membershipType}/Account/#{playerId}/Character/#{characterId}/Inventory/Summary"
 
-  makeRequest bot, endpoint, (response) ->
+  makeRequest bot, endpoint, null, (err, response) ->
     data = response.data
     items = data.items
 
@@ -264,15 +250,56 @@ getItemDetails = (bot, membershipType, playerId, characterId, itemInstanceId) ->
   endpoint = "#{membershipType}/Account/#{playerId}/Character/#{characterId}/Inventory/#{itemInstanceId}"
   params = 'definitions=true'
 
-  callback = (response) ->
+  makeRequest bot, endpoint, params, (err, response) ->
     item = dataHelper.serializeFromApi(response)
     deferred.resolve(item)
 
-  makeRequest(bot, endpoint, callback, params)
+  deferred.promise
+
+getPublicWeeklyActivity = (bot, activityKey) ->
+
+  deferred = new Deferred()
+  endpoint = "Advisors/V2"
+  makeRequest bot, endpoint, null, (err, response) ->
+
+    activity = response.data.activities[activityKey]
+
+    activityDetails = {
+      displayName: activity.display.advisorTypeCategory
+      modifiers: activity.extended.skullCategories
+      status: activity.status 
+    }
+
+    if activityKey not in constants.FURTHER_DETAILS
+      console.log("activityDetails = #{activityDetails}")
+      return deferred.resolve(activityDetails)
+
+    parceActivityHash(bot, activity.display.activityHash).then (details) ->
+      combinedDetails = Object.assign {}, activityDetails, details
+      console.log("combinedDetails = #{combinedDetails}")
+      deferred.resolve(combinedDetails)
+
+  deferred.promise
+
+parceActivityHash = (bot, activityHash) -> 
+  deferred = new Deferred()
+  endpoint = "Manifest/Activity/#{activityHash}"
+
+  makeRequest bot, endpoint, null, (err, response) ->
+
+    if err
+      return deferred.resolve(err)
+
+    activity = response.data.activity
+    details = 
+      activityName: activity.activityName
+      activityDescription: activity.activityDescription
+    deferred.resolve(details)
+
   deferred.promise
 
 # Sends GET request from an endpoint, needs a success callback
-makeRequest = (bot, endpoint, callback, params) ->
+makeRequest = (bot, endpoint, params, callback) ->
   BUNGIE_API_KEY = process.env.BUNGIE_API_KEY
   baseUrl = 'https://www.bungie.net/Platform/Destiny/'
   trailing = '/'
@@ -284,5 +311,9 @@ makeRequest = (bot, endpoint, callback, params) ->
   bot.http(url)
     .header('X-API-Key', BUNGIE_API_KEY)
     .get() (err, response, body) ->
+      if err
+        console.log("error: #{err}")
+        return callback(err)
+
       object = JSON.parse(body)
-      callback(object.Response)
+      callback(null, object.Response)

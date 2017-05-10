@@ -1,5 +1,5 @@
 request = require('request')
-constants = require('./showoff-constants.coffee')
+constants = require('./constants.coffee')
 
 class DataHelper
   'serializeFromApi': (response) ->
