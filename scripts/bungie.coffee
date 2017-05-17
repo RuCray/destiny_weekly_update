@@ -45,6 +45,9 @@ module.exports = (robot) ->
         message: res.message
         attachments: [dataHelper.parseActivityDetails(activityDetails)]
 
+      console.log 'Emitting payload:'
+      console.log payload
+
       robot.emit('slack-attachment', payload)
 
     ,(err) ->
@@ -138,6 +141,9 @@ sendHelp = (robot, res) ->
     message: res.message
     attachments: attachment
 
+  console.log 'Emitting payload:'
+  console.log payload
+
   robot.emit 'slack-attachment', payload
 
 checkNetwork = (network) ->
@@ -152,6 +158,8 @@ checkNetwork = (network) ->
 
 # Sends error message as DM in slack
 sendError = (robot, res, message) ->
+  console.log 'Sending error message:'
+  console.log message
   robot.send {room: res.message.user.name, "unfurl_media": false}, message
 
 tryPlayerId = (res, membershipType, displayName, robot) ->
@@ -275,11 +283,15 @@ getPublicWeeklyActivity = (bot, activityKey) ->
       return deferred.reject('No activity details found')
 
     if activityKey not in constants.FURTHER_DETAILS
+      console.log 'Resolving activity details for #{activityKey}:'
+      console.log activityDetails
       return deferred.resolve(activityDetails)
 
     parseActivityHash(bot, activityDetails.activityHash).then (details) ->
 
       combinedDetails = Object.assign {}, activityDetails, details
+      console.log 'Resolving combined activity details for #{activityKey}:'
+      console.log combinedDetails
       deferred.resolve(combinedDetails)
 
     ,(err) ->
