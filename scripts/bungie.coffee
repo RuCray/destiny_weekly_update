@@ -39,17 +39,20 @@ module.exports = (robot) ->
     else
       data['activityKey'] = activityKey
 
-    getPublicWeeklyActivity(res, data.activityKey).then((activityDetails) -> {
+    getPublicWeeklyActivity(res, data.activityKey).then (activityDetails) ->
 
       payload =
         message: res.message
         attachments: [dataHelper.parseActivityDetails(activityDetails)]
 
-      robot.emit 'slack-attachment', payload
-    }).fail((err) -> {
+      console.log 'Emitting payload:'
+      console.log payload
+
+      robot.emit('slack-attachment', payload)
+
+    ,(err) ->
 
       sendError(robot, res, err)
-    })
 
     # # interprets input based on length
     # # if 3 elements, assume: gamertag, network, bucket
@@ -138,6 +141,9 @@ sendHelp = (robot, res) ->
     message: res.message
     attachments: attachment
 
+  console.log 'Emitting payload:'
+  console.log payload
+
   robot.emit 'slack-attachment', payload
 
 checkNetwork = (network) ->
@@ -152,6 +158,8 @@ checkNetwork = (network) ->
 
 # Sends error message as DM in slack
 sendError = (robot, res, message) ->
+  console.log 'Sending error message:'
+  console.log message
   robot.send {room: res.message.user.name, "unfurl_media": false}, message
 
 tryPlayerId = (res, membershipType, displayName, robot) ->
@@ -264,13 +272,37 @@ getPublicWeeklyActivity = (bot, activityKey) ->
   endpoint = "Advisors/V2"
   makeRequest bot, endpoint, null, (err, response) ->
 
+    if err
+      console.log "Error fetching #{activityKey}: #{err}"
+      return deferred.reject(err)
+
     activityDetails = dataHelper.serializeActvity(response, activityKey)
+
+    if !activityDetails
+      console.log 'No activity details found'
+      return deferred.reject('No activity details found')
+
     if activityKey not in constants.FURTHER_DETAILS
+      console.log "Resolving activity details for #{activityKey}:"
+      console.log activityDetails
       return deferred.resolve(activityDetails)
 
     parseActivityHash(bot, activityDetails.activityHash).then (details) ->
-      combinedDetails = Object.assign {}, activityDetails, details
+
+      console.log 'parseActivityHash success:'
+      console.log details
+
+      combinedDetails = dataHelper.merge activityDetails, details
+      console.log "Resolving combined activity details for #{activityKey}:"
+      console.log combinedDetails
       deferred.resolve(combinedDetails)
+
+    ,(err) ->
+
+      console.log 'parseActivityHash failed:'
+      console.log err
+
+      deferred.reject(err)
 
   deferred.promise
 
@@ -281,7 +313,7 @@ parseActivityHash = (bot, activityHash) ->
   makeRequest bot, endpoint, null, (err, response) ->
 
     if err
-      return deferred.resolve(err)
+      return deferred.reject(err)
 
     deferred.resolve(dataHelper.serializeActivityDetails(response))
 
@@ -300,9 +332,12 @@ makeRequest = (bot, endpoint, params, callback) ->
   bot.http(url)
     .header('X-API-Key', BUNGIE_API_KEY)
     .get() (err, response, body) ->
+
+      console.log "response.statusCode: #{response.statusCode}"
+
       if err
         console.log("error: #{err}")
         return callback(err)
 
-      object = JSON.parse(body)
-      callback(null, object.Response)
+      json = JSON.parse(body)
+      callback(null, json.Response)
