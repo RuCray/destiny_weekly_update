@@ -289,12 +289,18 @@ getPublicWeeklyActivity = (bot, activityKey) ->
 
     parseActivityHash(bot, activityDetails.activityHash).then (details) ->
 
+      console.log 'parseActivityHash success:'
+      console.log details
+
       combinedDetails = Object.assign {}, activityDetails, details
       console.log "Resolving combined activity details for #{activityKey}:"
       console.log combinedDetails
       deferred.resolve(combinedDetails)
 
     ,(err) ->
+
+      console.log 'parseActivityHash failed:'
+      console.log err
 
       deferred.reject(err)
 
@@ -327,11 +333,12 @@ makeRequest = (bot, endpoint, params, callback) ->
     .header('X-API-Key', BUNGIE_API_KEY)
     .get() (err, response, body) ->
 
-      console.log "response: #{response}"
+      console.log "response:"
+      console.log response
 
       if err
         console.log("error: #{err}")
         return callback(err)
 
-      object = JSON.parse(body)
-      callback(null, object.Response)
+      json = JSON.parse(body)
+      callback(null, json.Response)
