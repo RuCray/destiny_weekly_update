@@ -39,17 +39,17 @@ module.exports = (robot) ->
     else
       data['activityKey'] = activityKey
 
-    getPublicWeeklyActivity(res, data.activityKey).then (activityDetails) -> {
+    getPublicWeeklyActivity(res, data.activityKey).then((activityDetails) -> {
 
       payload =
         message: res.message
         attachments: [dataHelper.parseActivityDetails(activityDetails)]
 
       robot.emit 'slack-attachment', payload
-    }.fail (err) -> {
+    }).fail((err) -> {
 
       sendError(robot, res, err)
-    }
+    })
 
     # # interprets input based on length
     # # if 3 elements, assume: gamertag, network, bucket
