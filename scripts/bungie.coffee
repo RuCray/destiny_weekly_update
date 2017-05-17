@@ -292,10 +292,12 @@ getPublicWeeklyActivity = (bot, activityKey) ->
       console.log 'parseActivityHash success:'
       console.log details
 
-      for attrname in obj2 { activityDetails[attrname] = details[attrname]; }
+      for attrname in details
+        activityDetails[attrname] = details[attrname]
+
       console.log "Resolving combined activity details for #{activityKey}:"
-      console.log combinedDetails
-      deferred.resolve(combinedDetails)
+      console.log activityDetails
+      deferred.resolve(activityDetails)
 
     ,(err) ->
 
