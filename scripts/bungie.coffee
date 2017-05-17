@@ -39,17 +39,17 @@ module.exports = (robot) ->
     else
       data['activityKey'] = activityKey
 
-    getPublicWeeklyActivity(res, data.activityKey).then((activityDetails) -> {
+    weeklyActivityDeferred = getPublicWeeklyActivity(res, data.activityKey)
+    weeklyActivityDeferred.then (activityDetails) ->
 
       payload =
         message: res.message
         attachments: [dataHelper.parseActivityDetails(activityDetails)]
 
-      robot.emit 'slack-attachment', payload
-    }).fail((err) -> {
+      robot.emit('slack-attachment', payload)
 
+    ,(err) ->
       sendError(robot, res, err)
-    })
 
     # # interprets input based on length
     # # if 3 elements, assume: gamertag, network, bucket
@@ -264,13 +264,27 @@ getPublicWeeklyActivity = (bot, activityKey) ->
   endpoint = "Advisors/V2"
   makeRequest bot, endpoint, null, (err, response) ->
 
+    if err
+      console.log 'Error fetching #{activityKey}: #{err}'
+      return deferred.reject(err)
+
     activityDetails = dataHelper.serializeActvity(response, activityKey)
+
+    if !activityDetails
+      console.log 'No activity details found'
+      return deferred.reject('No activity details found')
+
     if activityKey not in constants.FURTHER_DETAILS
       return deferred.resolve(activityDetails)
 
-    parseActivityHash(bot, activityDetails.activityHash).then (details) ->
+    parseActivityDeferred = parseActivityHash(bot, activityDetails.activityHash)
+
+    parseActivityDeferred.then (details) ->
       combinedDetails = Object.assign {}, activityDetails, details
       deferred.resolve(combinedDetails)
+
+    ,(err) ->
+      deferred.reject(err)
 
   deferred.promise
 
@@ -281,7 +295,7 @@ parseActivityHash = (bot, activityHash) ->
   makeRequest bot, endpoint, null, (err, response) ->
 
     if err
-      return deferred.resolve(err)
+      return deferred.reject(err)
 
     deferred.resolve(dataHelper.serializeActivityDetails(response))
 
