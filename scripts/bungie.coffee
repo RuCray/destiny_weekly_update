@@ -292,14 +292,7 @@ getPublicWeeklyActivity = (bot, activityKey) ->
       console.log 'parseActivityHash success:'
       console.log details
 
-      combinedDetails = {}
-      for attr in activityDetails
-        console.log "Adding #{attr}: #{activityDetails[attr]}"
-        combinedDetails[attr] = activityDetails[attr]
-      for attr in details
-        console.log "Adding #{attr}: #{details[attr]}"
-        combinedDetails[attr] = details[attr]
-
+      combinedDetails = dataHelper.merge activityDetails, details
       console.log "Resolving combined activity details for #{activityKey}:"
       console.log combinedDetails
       deferred.resolve(combinedDetails)
