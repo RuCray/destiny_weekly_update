@@ -273,7 +273,7 @@ getPublicWeeklyActivity = (bot, activityKey) ->
   makeRequest bot, endpoint, null, (err, response) ->
 
     if err
-      console.log 'Error fetching #{activityKey}: #{err}'
+      console.log "Error fetching #{activityKey}: #{err}"
       return deferred.reject(err)
 
     activityDetails = dataHelper.serializeActvity(response, activityKey)
@@ -283,18 +283,24 @@ getPublicWeeklyActivity = (bot, activityKey) ->
       return deferred.reject('No activity details found')
 
     if activityKey not in constants.FURTHER_DETAILS
-      console.log 'Resolving activity details for #{activityKey}:'
+      console.log "Resolving activity details for #{activityKey}:"
       console.log activityDetails
       return deferred.resolve(activityDetails)
 
     parseActivityHash(bot, activityDetails.activityHash).then (details) ->
 
-      combinedDetails = Object.assign {}, activityDetails, details
-      console.log 'Resolving combined activity details for #{activityKey}:'
+      console.log 'parseActivityHash success:'
+      console.log details
+
+      combinedDetails = dataHelper.merge activityDetails, details
+      console.log "Resolving combined activity details for #{activityKey}:"
       console.log combinedDetails
       deferred.resolve(combinedDetails)
 
     ,(err) ->
+
+      console.log 'parseActivityHash failed:'
+      console.log err
 
       deferred.reject(err)
 
@@ -326,9 +332,12 @@ makeRequest = (bot, endpoint, params, callback) ->
   bot.http(url)
     .header('X-API-Key', BUNGIE_API_KEY)
     .get() (err, response, body) ->
+
+      console.log "response.statusCode: #{response.statusCode}"
+
       if err
         console.log("error: #{err}")
         return callback(err)
 
-      object = JSON.parse(body)
-      callback(null, object.Response)
+      json = JSON.parse(body)
+      callback(null, json.Response)
