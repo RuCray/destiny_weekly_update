@@ -39,16 +39,19 @@ module.exports = (robot) ->
     else
       data['activityKey'] = activityKey
 
-    weeklyActivityDeferred = getPublicWeeklyActivity(res, data.activityKey)
-    weeklyActivityDeferred.then (activityDetails) ->
+    getPublicWeeklyActivity(res, data.activityKey).then (activityDetails) ->
 
       payload =
         message: res.message
         attachments: [dataHelper.parseActivityDetails(activityDetails)]
 
+      console.log 'Emitting payload:'
+      console.log payload
+
       robot.emit('slack-attachment', payload)
 
     ,(err) ->
+
       sendError(robot, res, err)
 
     # # interprets input based on length
@@ -138,6 +141,9 @@ sendHelp = (robot, res) ->
     message: res.message
     attachments: attachment
 
+  console.log 'Emitting payload:'
+  console.log payload
+
   robot.emit 'slack-attachment', payload
 
 checkNetwork = (network) ->
@@ -152,6 +158,8 @@ checkNetwork = (network) ->
 
 # Sends error message as DM in slack
 sendError = (robot, res, message) ->
+  console.log 'Sending error message:'
+  console.log message
   robot.send {room: res.message.user.name, "unfurl_media": false}, message
 
 tryPlayerId = (res, membershipType, displayName, robot) ->
@@ -275,15 +283,19 @@ getPublicWeeklyActivity = (bot, activityKey) ->
       return deferred.reject('No activity details found')
 
     if activityKey not in constants.FURTHER_DETAILS
+      console.log 'Resolving activity details for #{activityKey}:'
+      console.log activityDetails
       return deferred.resolve(activityDetails)
 
-    parseActivityDeferred = parseActivityHash(bot, activityDetails.activityHash)
+    parseActivityHash(bot, activityDetails.activityHash).then (details) ->
 
-    parseActivityDeferred.then (details) ->
       combinedDetails = Object.assign {}, activityDetails, details
+      console.log 'Resolving combined activity details for #{activityKey}:'
+      console.log combinedDetails
       deferred.resolve(combinedDetails)
 
     ,(err) ->
+
       deferred.reject(err)
 
   deferred.promise
