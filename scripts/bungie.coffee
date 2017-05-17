@@ -39,8 +39,7 @@ module.exports = (robot) ->
     else
       data['activityKey'] = activityKey
 
-    weeklyActivityDeferred = getPublicWeeklyActivity(res, data.activityKey)
-    weeklyActivityDeferred.then (activityDetails) ->
+    getPublicWeeklyActivity(res, data.activityKey).then (activityDetails) ->
 
       payload =
         message: res.message
@@ -49,6 +48,7 @@ module.exports = (robot) ->
       robot.emit('slack-attachment', payload)
 
     ,(err) ->
+
       sendError(robot, res, err)
 
     # # interprets input based on length
@@ -277,13 +277,13 @@ getPublicWeeklyActivity = (bot, activityKey) ->
     if activityKey not in constants.FURTHER_DETAILS
       return deferred.resolve(activityDetails)
 
-    parseActivityDeferred = parseActivityHash(bot, activityDetails.activityHash)
+    parseActivityHash(bot, activityDetails.activityHash).then (details) ->
 
-    parseActivityDeferred.then (details) ->
       combinedDetails = Object.assign {}, activityDetails, details
       deferred.resolve(combinedDetails)
 
     ,(err) ->
+
       deferred.reject(err)
 
   deferred.promise
