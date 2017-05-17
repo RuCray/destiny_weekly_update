@@ -294,8 +294,10 @@ getPublicWeeklyActivity = (bot, activityKey) ->
 
       combinedDetails = {}
       for attr in activityDetails
+        console.log "Adding #{attr}: #{activityDetails[attr]}"
         combinedDetails[attr] = activityDetails[attr]
       for attr in details
+        console.log "Adding #{attr}: #{details[attr]}"
         combinedDetails[attr] = details[attr]
 
       console.log "Resolving combined activity details for #{activityKey}:"
