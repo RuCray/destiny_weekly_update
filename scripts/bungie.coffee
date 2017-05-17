@@ -5,7 +5,7 @@ DataHelper = require './bungie-data-helper.coffee'
 constants = require './constants.coffee'
 
 dataHelper = new DataHelper
-helpText = "Use the `help` command to learn about using the bot, or check out the full README here: https://github.com/RuCray/destiny_weekly_update"
+helpText = "Check out the full README here: https://github.com/RuCray/destiny_weekly_update"
 
 module.exports = (robot) ->
   # executes when any text is directed at the bot
@@ -40,12 +40,14 @@ module.exports = (robot) ->
       data['activityKey'] = activityKey
 
     getPublicWeeklyActivity(res, data.activityKey).then (activityDetails) ->
-
       payload =
         message: res.message
         attachments: [dataHelper.parseActivityDetails(activityDetails)]
 
       robot.emit 'slack-attachment', payload
+
+    .fail (err) ->
+      sendError(robot, res, err)
 
     # # interprets input based on length
     # # if 3 elements, assume: gamertag, network, bucket
@@ -85,11 +87,11 @@ module.exports = (robot) ->
     #         robot.emit 'slack-attachment', payload
 
 
-  robot.respond /help/i, (res) ->
-    sendHelp(robot, res)
+  # robot.respond /help/i, (res) ->
+  #   sendHelp(robot, res)
 
-  robot.respond /!help/i, (res) ->
-    sendHelp(robot, res)
+  # robot.respond /!help/i, (res) ->
+  #   sendHelp(robot, res)
 
 
 sendHelp = (robot, res) ->
@@ -135,7 +137,6 @@ sendHelp = (robot, res) ->
     attachments: attachment
 
   robot.emit 'slack-attachment', payload
-
 
 checkNetwork = (network) ->
   xbox = ['xbox', 'xb1', 'xbox1', 'xboxone', 'xbox360', 'xb360', 'xbone', 'xb']
