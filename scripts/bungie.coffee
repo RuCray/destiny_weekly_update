@@ -45,7 +45,7 @@ module.exports = (robot) ->
 
     else if inputFirst is 'vendor'
       for vendorHash in constants.VENDORS
-        getVendor(res, vendorHash).then (vendor) ->
+        getVendorSaleItemCategories(res, vendorHash).then (saleItemCategories) ->
           return
         , (err) ->
           sendError(robot, res, err)
@@ -58,23 +58,26 @@ module.exports = (robot) ->
       if !vendors
         return sendError(robot, res, "Unable to locate vendor: #{input[1]}")
 
+      itemCategoriesDefers = []
       for vendorHash in vendors
-        getVendor(res, vendorHash).then (vendor) ->
-          for item in vendor.sales
-            if item.bucketHash isnt constants.BOUNTIES_BUCKET_HASH
-              console.log "#{item.itemHash} is not a bounty."
-              continue
-            if item.categoryIndex isnt 60
-              console.log "#{item.itemHash} is not on sale."
-              continue
-
-            getItem(res, item.itemHash).then (itemDetails) ->
-              return
-            , (err) ->
-              return sendError(robot.res, err)
-
+        deferred = new Deferred()
+        getVendorSaleItemCategories(res, vendorHash).then (saleItemCategories) ->
+          for category in saleItemCategories
+            if category.categoryIndex in constants.BOUNTIES_CATEGORY_INDICES
+              return deferred.resolve(category.salesItems)
         , (err) ->
-          return sendError(robot, res, err)
+          return deferred.reject(err)
+
+        itemCategoriesDefers.push deferred
+
+      when itemCategoriesDefers .done (bountyItems) ->
+        console.log 'bountyItems = '
+        console.log bountyItems
+
+          # getItem(res, item.itemHash).then (itemDetails) ->
+          #   return
+          # , (err) ->
+          #   return sendError(robot.res, err)
 
     else
       # command not recognized. Lists all available commands
@@ -323,9 +326,9 @@ parseActivityHash = (bot, activityHash) ->
 
   deferred.promise
 
-getVendor = (bot, vendorHash) ->
+getVendorSaleItemCategories = (bot, vendorHash) ->
   deferred = new Deferred()
-  endpoint = "Manifest/Vendor/#{vendorHash}"
+  endpoint = "Vendors/#{vendorHash}"
 
   makeRequest bot, endpoint, null, (err, response) ->
     if err
@@ -333,11 +336,11 @@ getVendor = (bot, vendorHash) ->
       console.log err
       return deferred.reject(err)
 
-    if !response || !response.data || !response.data.vendor
+    if !response || !response.data || !response.data.saleItemCategories
       console.log 'Error getting vendor: ' + vendorHash
       return deferred.reject(err)
 
-    deferred.resolve(response.data.vendor)
+    deferred.resolve(response.data.saleItemCategories)
 
   deferred.promise
 
