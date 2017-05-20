@@ -54,8 +54,7 @@ module.exports = (robot) ->
       if input.length < 2
         return sendError(robot, res, 'Please specify which vendor you\'re looking up bounties for.')
 
-      vendors = constants.BOUNTY_VENDORS.input[1]
-
+      vendors = constants.BOUNTY_VENDORS[input[1]]
       if !vendors
         return sendError(robot, res, "Unable to locate vendor: #{input[1]}")
 
