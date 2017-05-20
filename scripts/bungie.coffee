@@ -67,7 +67,7 @@ module.exports = (robot) ->
               return deferred.resolve(category.salesItems)
         , (err) ->
           return deferred.reject(err)
-        deferred.promise()
+        deferred.promise
         itemCategoriesDefers.push deferred
 
       Promise.all(itemCategoriesDefers).done (bountyItems) ->
