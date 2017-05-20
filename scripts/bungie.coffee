@@ -26,33 +26,37 @@ module.exports = (robot) ->
 
     data = {}
 
+    emitPayload = (payload) ->
+      console.log 'Emitting payload:'
+      console.log payload
+      robot.emit('slack-attachment', payload)
+
     # activity should always be last input
-    el = input[input.length-1].toLowerCase()
-    activityKey = constants.ACTIVITY_KEYS[el]
-    if !activityKey
+    inputFirst = input[0].toLowerCase()
+    activityKey = constants.ACTIVITY_KEYS[inputFirst]
+    if activityKey
+      getPublicWeeklyActivity(res, activityKey).then (activityDetails) ->
+        payload =
+          message: res.message
+          attachments: [dataHelper.parseActivityDetails(activityDetails)]
+        emitPayload(payload)
+      ,(err) ->
+        sendError(robot, res, err)
+
+    else if inputFirst is 'vendor'
+      for vendorHash in constants.VENDORS
+        getVendor(vendorHash).then (vendor) ->
+
+        ,(err) ->
+          sendError(robot, res, err)
+
+    else
+      # command not recognized. Lists all available commands
       message = "Available commands are:\n"
       for command in constants.COMMANDS
         message += "`#{command}`\n"
       message += "\n#{helpText}"
-      sendError(robot, res, message)
-      return
-    else
-      data['activityKey'] = activityKey
-
-    getPublicWeeklyActivity(res, data.activityKey).then (activityDetails) ->
-
-      payload =
-        message: res.message
-        attachments: [dataHelper.parseActivityDetails(activityDetails)]
-
-      console.log 'Emitting payload:'
-      console.log payload
-
-      robot.emit('slack-attachment', payload)
-
-    ,(err) ->
-
-      sendError(robot, res, err)
+      return sendError(robot, res, message)
 
     # # interprets input based on length
     # # if 3 elements, assume: gamertag, network, bucket
@@ -290,6 +294,22 @@ parseActivityHash = (bot, activityHash) ->
       return deferred.reject(err)
 
     deferred.resolve(dataHelper.serializeActivityDetails(response))
+
+  deferred.promise
+
+getVendor = (bot, vendorHash) ->
+  deferred = new Deferred()
+  endpoint = "Manifest/Vendor/#{vendorHash}"
+
+  makeRequest bot, endpoint, null, (err, response) ->
+    if err
+      console.log 'error getting vendor' + vendorHash
+      console.log err
+      return deferred.reject(err)
+
+    vendor = response.data.vendor
+    console.log "#{vendorHash} = #{vendor.vendorName} - #{vendor.factionName}"
+    deferred.resolve(vendor)
 
   deferred.promise
 
