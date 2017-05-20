@@ -378,6 +378,8 @@ makeRequest = (bot, endpoint, params, callback) ->
 
       console.log "response.statusCode: #{response.statusCode}"
 
+      console.log "##### body = #{body}"
+
       if err
         console.log("error: #{err}")
         return callback(err)
