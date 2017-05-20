@@ -303,13 +303,13 @@ getVendor = (bot, vendorHash) ->
 
   makeRequest bot, endpoint, null, (err, response) ->
     if err
-      console.log 'error getting vendor' + vendorHash
+      console.log 'error getting vendor: ' + vendorHash
       console.log err
-      return deferred.reject(err)
+      return
 
     if !response || !response.data || !response.data.vendor || !response.data.vendor.summary
-      console.log 'error getting vendor' + vendorHash
-      return deferred.reject(null)
+      console.log 'error getting vendor: ' + vendorHash
+      return
 
     summary = response.data.vendor.summary
     console.log "#{vendorHash} = #{summary.vendorName} - #{summary.factionName}"
