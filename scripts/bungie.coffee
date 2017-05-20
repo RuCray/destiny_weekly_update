@@ -64,7 +64,7 @@ module.exports = (robot) ->
             if item.bucketHash isnt constants.BOUNTIES_BUCKET_HASH
               console.log "#{item.itemHash} is not a bounty."
               continue
-            if item.categoryIndex isnt 61
+            if item.categoryIndex isnt 60
               console.log "#{item.itemHash} is not on sale."
               continue
 
