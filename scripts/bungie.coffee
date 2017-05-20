@@ -340,16 +340,13 @@ getVendor = (bot, vendorHash) ->
 
 getItem = (bot, itemHash) ->
   deferred = new Deferred()
-  endpoint = "Manifest/InvetoryItem/#{itemHash}"
+  endpoint = "Manifest/InventoryItem/#{itemHash}"
 
   makeRequest bot, endpoint, null, (err, response) ->
     if err
       console.log 'Error getting item: ' + itemHash
       console.log err
       return
-
-    console.log '!!!!! response:'
-    console.log response
 
     if !response || !response.data || !response.data.inventoryItem
       console.log 'Error getting item: ' + itemHash
@@ -377,9 +374,6 @@ makeRequest = (bot, endpoint, params, callback) ->
     .get() (err, response, body) ->
 
       console.log "response.statusCode: #{response.statusCode}"
-
-      console.log "##### body = #{body}"
-
       if err
         console.log("error: #{err}")
         return callback(err)
