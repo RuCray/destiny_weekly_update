@@ -45,7 +45,7 @@ module.exports = (robot) ->
 
     else if inputFirst is 'vendor'
       for vendorHash in constants.VENDORS
-        getVendor(vendorHash).then (vendor) ->
+        getVendor(bot, vendorHash).then (vendor) ->
           return
         ,(err) ->
           sendError(robot, res, err)
