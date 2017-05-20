@@ -70,7 +70,7 @@ module.exports = (robot) ->
         deferred.promise()
         itemCategoriesDefers.push deferred
 
-      Promice.all(itemCategoriesDefers).done (bountyItems) ->
+      Promise.all(itemCategoriesDefers).done (bountyItems) ->
         console.log 'bountyItems = '
         console.log bountyItems
 
