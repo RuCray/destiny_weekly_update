@@ -330,7 +330,7 @@ getVendor = (bot, vendorHash) ->
       console.log err
       return deferred.reject(err)
 
-    if !response || !response.data || !response.data.vendor || !response.data.vendor.summary
+    if !response || !response.data || !response.data.vendor
       console.log 'Error getting vendor: ' + vendorHash
       return deferred.reject(err)
 
@@ -347,6 +347,9 @@ getItem = (bot, itemHash) ->
       console.log 'Error getting item: ' + itemHash
       console.log err
       return
+
+    console.log '!!!!! response:'
+    console.log response
 
     if !response || !response.data || !response.data.inventoryItem
       console.log 'Error getting item: ' + itemHash
