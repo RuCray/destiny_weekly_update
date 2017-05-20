@@ -58,7 +58,7 @@ module.exports = (robot) ->
       if !vendors
         return sendError(robot, res, "Unable to locate vendor: #{input[1]}")
 
-      itemCategoriesDefers = []
+      itemCategoriesPromises = []
       for vendorHash in vendors
         deferred = new Deferred()
         getVendorSaleItemCategories(res, vendorHash).then (saleItemCategories) ->
@@ -67,10 +67,9 @@ module.exports = (robot) ->
               return deferred.resolve(category.salesItems)
         , (err) ->
           return deferred.reject(err)
-        deferred.promise
-        itemCategoriesDefers.push deferred
+        itemCategoriesPromises.push deferred.promise
 
-      Promise.all(itemCategoriesDefers).done (bountyItems) ->
+      when.all(itemCategoriesPromises).done (bountyItems) ->
         console.log 'bountyItems = '
         console.log bountyItems
 
