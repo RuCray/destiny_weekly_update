@@ -70,7 +70,7 @@ module.exports = (robot) ->
 
         itemCategoriesDefers.push deferred
 
-      when itemCategoriesDefers .done (bountyItems) ->
+      $.when itemCategoriesDefers .done (bountyItems) ->
         console.log 'bountyItems = '
         console.log bountyItems
 
