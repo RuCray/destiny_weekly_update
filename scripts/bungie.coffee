@@ -61,6 +61,10 @@ module.exports = (robot) ->
       for vendorHash in vendors
         getVendor(res, vendorHash).then (vendor) ->
           for item in vendor.sales
+            if item.bucketHash isnt constants.BOUNTIES_BUCKET_HASH
+              console.log "#{item.itemHash} is not a bounty."
+              continue
+
             getItem(res, item.itemHash).then (itemDetails) ->
               return
             , (err) ->
@@ -340,12 +344,13 @@ getItem = (bot, itemHash) ->
 
   makeRequest bot, endpoint, null, (err, response) ->
     if err
-      console.log 'error getting item: ' + itemHash
+      console.log 'Error getting item: ' + itemHash
       console.log err
       return
 
     if !response || !response.data || !response.data.inventoryItem
-      console.log 'error getting item: ' + itemHash
+      console.log 'Error getting item: ' + itemHash
+      console.log response.data.inventoryItem
       return
 
     item = response.data.inventoryItem

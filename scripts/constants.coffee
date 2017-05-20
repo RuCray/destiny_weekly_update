@@ -82,6 +82,8 @@ module.exports =
     'Solar': '#e68a00'
     'Void': '#400080'
 
+  BOUNTIES_BUCKET_HASH: 2197472680,
+
   BOUNTY_VENDORS: {
     coe: [ 1998812735 ],
     crucible: [ 3746647075, 3658200622 ],
