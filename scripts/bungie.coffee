@@ -64,6 +64,9 @@ module.exports = (robot) ->
             if item.bucketHash isnt constants.BOUNTIES_BUCKET_HASH
               console.log "#{item.itemHash} is not a bounty."
               continue
+            if item.categoryIndex isnt 61
+              console.log "#{item.itemHash} is not on sale."
+              continue
 
             getItem(res, item.itemHash).then (itemDetails) ->
               return
@@ -355,7 +358,7 @@ getItem = (bot, itemHash) ->
 
     item = response.data.inventoryItem
     console.log "#{itemHash} = #{item.itemName} - #{item.itemDescription}"
-    deferred.resolve(summary)
+    deferred.resolve(item)
 
   deferred.promise
 
