@@ -307,9 +307,13 @@ getVendor = (bot, vendorHash) ->
       console.log err
       return deferred.reject(err)
 
-    vendor = response.data.vendor
-    console.log "#{vendorHash} = #{vendor.vendorName} - #{vendor.factionName}"
-    deferred.resolve(vendor)
+    if !response || !response.data || !response.data.vendor || !response.data.vendor.summary
+      console.log 'error getting vendor' + vendorHash
+      return deferred.reject(null)
+
+    summary = response.data.vendor.summary
+    console.log "#{vendorHash} = #{summary.vendorName} - #{summary.factionName}"
+    deferred.resolve(summary)
 
   deferred.promise
 
