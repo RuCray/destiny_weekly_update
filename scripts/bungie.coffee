@@ -40,15 +40,35 @@ module.exports = (robot) ->
           message: res.message
           attachments: [dataHelper.parseActivityDetails(activityDetails)]
         emitPayload(payload)
-      ,(err) ->
+      , (err) ->
         sendError(robot, res, err)
 
     else if inputFirst is 'vendor'
       for vendorHash in constants.VENDORS
         getVendor(res, vendorHash).then (vendor) ->
           return
-        ,(err) ->
+        , (err) ->
           sendError(robot, res, err)
+
+    else if inputFirst is 'bounties'
+      if input.length < 2
+        return sendError(robot, res, 'Please specify which vendor you\'re looking up bounties for.')
+
+      vendors = constants.BOUNTY_VENDORS.input[1]
+
+      if !vendors
+        return sendError(robot, res, "Unable to locate vendor: #{input[1]}")
+
+      for vendorHash in vendors
+        getVendor(res, vendorHash).then (vendor) ->
+          for item in vendor.sales
+            getItem(res, item.itemHash).then (itemDetails) ->
+              return
+            , (err) ->
+              return sendError(robot.res, err)
+
+        , (err) ->
+          return sendError(robot, res, err)
 
     else
       # command not recognized. Lists all available commands
@@ -275,7 +295,7 @@ getPublicWeeklyActivity = (bot, activityKey) ->
       console.log combinedDetails
       deferred.resolve(combinedDetails)
 
-    ,(err) ->
+    , (err) ->
 
       console.log 'parseActivityHash failed:'
       console.log err
@@ -303,16 +323,34 @@ getVendor = (bot, vendorHash) ->
 
   makeRequest bot, endpoint, null, (err, response) ->
     if err
-      console.log 'error getting vendor: ' + vendorHash
+      console.log 'Error getting vendor: ' + vendorHash
+      console.log err
+      return deferred.reject(err)
+
+    if !response || !response.data || !response.data.vendor || !response.data.vendor.summary
+      console.log 'Error getting vendor: ' + vendorHash
+      return deferred.reject(err)
+
+    deferred.resolve(response.data.vendor)
+
+  deferred.promise
+
+getItem = (bot, itemHash) ->
+  deferred = new Deferred()
+  endpoint = "Manifest/InvetoryItem/#{itemHash}"
+
+  makeRequest bot, endpoint, null, (err, response) ->
+    if err
+      console.log 'error getting item: ' + itemHash
       console.log err
       return
 
-    if !response || !response.data || !response.data.vendor || !response.data.vendor.summary
-      console.log 'error getting vendor: ' + vendorHash
+    if !response || !response.data || !response.data.inventoryItem
+      console.log 'error getting item: ' + itemHash
       return
 
-    summary = response.data.vendor.summary
-    console.log "#{vendorHash} = #{summary.vendorName} - #{summary.factionName}"
+    item = response.data.inventoryItem
+    console.log "#{itemHash} = #{item.itemName} - #{item.itemDescription}"
     deferred.resolve(summary)
 
   deferred.promise
