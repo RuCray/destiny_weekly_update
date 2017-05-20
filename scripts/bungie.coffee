@@ -67,10 +67,10 @@ module.exports = (robot) ->
               return deferred.resolve(category.salesItems)
         , (err) ->
           return deferred.reject(err)
-
+        deferred.promise()
         itemCategoriesDefers.push deferred
 
-      $.when itemCategoriesDefers .done (bountyItems) ->
+      Promice.all(itemCategoriesDefers).done (bountyItems) ->
         console.log 'bountyItems = '
         console.log bountyItems
 
