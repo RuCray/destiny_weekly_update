@@ -65,7 +65,7 @@ module.exports = (robot) ->
           for category in saleItemCategories
             if category.categoryIndex in Constants.BOUNTIES_CATEGORY_INDICES
               console.log category
-              bountyItems.push category.salesItems...
+              bountyItems = bountyItems.concat category.salesItems
               --remainingIteration
 
               if remainingIteration is 0
