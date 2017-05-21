@@ -1,4 +1,6 @@
 require('dotenv').load()
+request './string-utils.coffee'
+
 Deferred = require('promise.coffee').Deferred
 Q = require('q')
 DataHelper = require './bungie-data-helper.coffee'
@@ -90,20 +92,7 @@ module.exports = (robot) ->
 
     else
       # command not recognized. Lists all available commands
-      message = "Available commands are:\n"
-
-      # activity
-      message += '`activity` +\n'
-      for command in Constants.COMMANDS
-        message += "`#{command}`\n"
-
-      # bounties
-      message += '`bounties` +\n'
-      for command in Object.keys Constants.BOUNTY_VENDORS
-        message += "`#{command}`\n"
-
-      message += "\n#{helpText}"
-      return sendError(robot, res, message)
+      return sendHelp(robot, res)
 
     # # interprets input based on length
     # # if 3 elements, assume: gamertag, network, bucket
@@ -151,8 +140,15 @@ module.exports = (robot) ->
 
 
 sendHelp = (robot, res) ->
+
   message = "Available commands are:\n"
+  # activity
+  message += '`activity` +\n'
   for command in Constants.COMMANDS
+    message += "`#{command}`\n"
+  # bounties
+  message += '`bounties` +\n'
+  for command in Object.keys Constants.BOUNTY_VENDORS
     message += "`#{command}`\n"
   message += "\n#{helpText}"
 
