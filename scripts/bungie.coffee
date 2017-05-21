@@ -42,7 +42,7 @@ module.exports = (robot) ->
 
     else if inputFirst is 'vendor'
       for vendorHash in Constants.VENDORS
-        getVendorDetails(res, vendorHash).then (saleItemCategories) ->
+        getVendorDetails(res, vendorHash).then (vendorDetails) ->
           return
         , (err) ->
           sendError(robot, res, err)
@@ -59,6 +59,9 @@ module.exports = (robot) ->
       remainingIteration = vendors.length
       for vendorHash in vendors
         getVendorDetails(res, vendorHash).then (vendorDetails) ->
+
+          console.log vendorDetails.saleItemCategories
+
           for category in vendorDetails.saleItemCategories
             if category.categoryIndex in Constants.BOUNTIES_CATEGORY_INDICES
               bountyItems.push category.saleItems...
