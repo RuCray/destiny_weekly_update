@@ -356,6 +356,7 @@ getVendorDetails = (bot, vendorHash) ->
       !response.definitions.vendorDetails or
       !response.definitions.vendorDetails[vendorHash] or
       !response.definitions.vendorDetails[vendorHash].vendorName
+        console.log response.definitions.vendorDetails[vendorHash].vendorName
         console.log 'Error getting vendor details: ' + vendorHash
         return deferred.reject()
 
