@@ -146,7 +146,7 @@ class DataHelper
       message += '\n'
       for mod in activityDetails.modifiers
         for skull in mod.skulls
-          message += "#{skull.displayName}\n"
+          message += "*#{skull.displayName}*\n"
           message += "_#{skull.description}_\n"
 
     if message
@@ -160,11 +160,11 @@ class DataHelper
 
     message = ''
     for bountyItem in vendorBountyDetails.bountyItemsDetail
-        message += "#{bountyItem.itemName}\n"
+        message += "*#{bountyItem.itemName}*\n"
         message += "_#{bountyItem.itemDescription}_\n"
 
     attachment =
-      title: vendorBountyDetails.vendorName
+      author_name: vendorBountyDetails.vendorName + ' Bounties'
       fallback: vendorBountyDetails.vendorName
       text: message
       mrkdwn_in: ['text']
