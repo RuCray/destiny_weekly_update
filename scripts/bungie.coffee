@@ -65,7 +65,7 @@ module.exports = (robot) ->
           for category in saleItemCategories
             if category.categoryIndex in Constants.BOUNTIES_CATEGORY_INDICES
               console.log category
-              Array::push.apply bountyItems, category.salesItems
+              Array::push.apply bountyItems, category.saleItems
               --remainingIteration
 
               if remainingIteration is 0
