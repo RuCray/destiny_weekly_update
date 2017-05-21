@@ -71,7 +71,7 @@ module.exports = (robot) ->
                 bountyItemsDetail = []
                 remainingIteration = bountyItems.length
                 for item in bountyItems
-                  getItem(res, item.itemHash).then (itemDetails) ->
+                  getItem(res, item.item.itemHash).then (itemDetails) ->
                     bountyItemsDetail.push {
                       itemName: itemDetails.itemName,
                       itemDescription: itemDetails.itemDescription,
