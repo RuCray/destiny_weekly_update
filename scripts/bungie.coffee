@@ -60,9 +60,6 @@ module.exports = (robot) ->
       for vendorHash in vendors
         getVendorDetails(res, vendorHash).then (vendorDetails) ->
 
-          console.log 'vendorDetails ='
-          console.log vendorDetails
-
           for category in vendorDetails.saleItemCategories
             if category.categoryIndex in Constants.BOUNTIES_CATEGORY_INDICES
               bountyItems.push category.saleItems...
@@ -366,7 +363,7 @@ getVendorDetails = (bot, vendorHash) ->
 
     vendorDetails =
       vendorName: response.definitions.vendorDetails[vendorHash].summary.vendorName,
-      salesItemCategories: response.data.saleItemCategories
+      saleItemCategories: response.data.saleItemCategories
 
     deferred.resolve(vendorDetails)
 
