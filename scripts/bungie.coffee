@@ -2,7 +2,7 @@ require('dotenv').load()
 Deferred = require('promise.coffee').Deferred
 Q = require('q')
 DataHelper = require './bungie-data-helper.coffee'
-constants = require './constants.coffee'
+Constants = require './constants.coffee'
 
 dataHelper = new DataHelper
 helpText = "Check out the full README here: https://github.com/RuCray/destiny_weekly_update"
@@ -33,7 +33,7 @@ module.exports = (robot) ->
 
     # activity should always be last input
     inputFirst = input[0].toLowerCase()
-    activityKey = constants.ACTIVITY_KEYS[inputFirst]
+    activityKey = Constants.ACTIVITY_KEYS[inputFirst]
     if activityKey
       getPublicWeeklyActivity(res, activityKey).then (activityDetails) ->
         payload =
@@ -44,7 +44,7 @@ module.exports = (robot) ->
         sendError(robot, res, err)
 
     else if inputFirst is 'vendor'
-      for vendorHash in constants.VENDORS
+      for vendorHash in Constants.VENDORS
         getVendorSaleItemCategories(res, vendorHash).then (saleItemCategories) ->
           return
         , (err) ->
@@ -54,34 +54,34 @@ module.exports = (robot) ->
       if input.length < 2
         return sendError(robot, res, 'Please specify which vendor you\'re looking up bounties for.')
 
-      vendors = constants.BOUNTY_VENDORS[input[1]]
+      vendors = Constants.BOUNTY_VENDORS[input[1]]
       if !vendors
         return sendError(robot, res, "Unable to locate vendor: #{input[1]}")
 
-      itemCategoriesPromises = []
+      bountyItems = []
+      remainingIteration = vendors.length
       for vendorHash in vendors
-        deferred = new Deferred()
         getVendorSaleItemCategories(res, vendorHash).then (saleItemCategories) ->
           for category in saleItemCategories
-            if category.categoryIndex in constants.BOUNTIES_CATEGORY_INDICES
-              return deferred.resolve(category.salesItems)
+            if category.categoryIndex in Constants.BOUNTIES_CATEGORY_INDICES
+              bountyItems.push category.salesItems...
+              --remainingIteration
+
+              if remainingIteration is 0
+                console.log 'bountyItems = '
+                console.log bountyItems
+                # getItem(res, item.itemHash).then (itemDetails) ->
+                #   return
+                # , (err) ->
+                #   return sendError(robot.res, err)
+
         , (err) ->
-          return deferred.reject(err)
-        itemCategoriesPromises.push deferred.promise
-
-      when.all(itemCategoriesPromises).done (bountyItems) ->
-        console.log 'bountyItems = '
-        console.log bountyItems
-
-          # getItem(res, item.itemHash).then (itemDetails) ->
-          #   return
-          # , (err) ->
-          #   return sendError(robot.res, err)
+          -- remainingIteration
 
     else
       # command not recognized. Lists all available commands
       message = "Available commands are:\n"
-      for command in constants.COMMANDS
+      for command in Constants.COMMANDS
         message += "`#{command}`\n"
       message += "\n#{helpText}"
       return sendError(robot, res, message)
@@ -133,7 +133,7 @@ module.exports = (robot) ->
 
 sendHelp = (robot, res) ->
   message = "Available commands are:\n"
-  for command in constants.COMMANDS
+  for command in Constants.COMMANDS
     message += "`#{command}`\n"
   message += "\n#{helpText}"
 
@@ -288,7 +288,7 @@ getPublicWeeklyActivity = (bot, activityKey) ->
       console.log 'No activity details found'
       return deferred.reject('No activity details found')
 
-    if activityKey not in constants.FURTHER_DETAILS
+    if activityKey not in Constants.FURTHER_DETAILS
       console.log "Resolving activity details for #{activityKey}:"
       console.log activityDetails
       return deferred.resolve(activityDetails)
