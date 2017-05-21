@@ -56,38 +56,34 @@ module.exports = (robot) ->
         return sendError(robot, res, "Unable to locate vendor: #{input[1]}")
 
       bountyItems = []
-      remainingIteration = vendors.length
       for vendorHash in vendors
         getVendorDetails(res, vendorHash).then (vendorDetails) ->
 
           for category in vendorDetails.saleItemCategories
             if category.categoryIndex in Constants.BOUNTIES_CATEGORY_INDICES
-              bountyItems.push category.saleItems...
-              --remainingIteration
+              bountyItems = category.saleItems
+              bountyItemsDetail = []
+              remainingIteration = bountyItems.length
+              for item in bountyItems
+                getItem(res, item.item.itemHash).then (itemDetails) ->
+                  bountyItemsDetail.push {
+                    itemName: itemDetails.itemName,
+                    itemDescription: itemDetails.itemDescription,
+                  }
+                  --remainingIteration
 
-              if remainingIteration is 0
-                bountyItemsDetail = []
-                remainingIteration = bountyItems.length
-                for item in bountyItems
-                  getItem(res, item.item.itemHash).then (itemDetails) ->
-                    bountyItemsDetail.push {
-                      itemName: itemDetails.itemName,
-                      itemDescription: itemDetails.itemDescription,
+                  if remainingIteration is 0
+                    vendorBountiesDetail = {
+                      vendorName: vendorDetails.vendorName,
+                      bountyItemsDetail: bountyItemsDetail
                     }
-                    --remainingIteration
+                    attachment = dataHelper.parseVendorBountyDetails(vendorBountiesDetail)
+                    sendMessage(robot, res, attachment)
 
-                    if remainingIteration is 0
-                      vendorBountiesDetail = {
-                        vendorName: vendorDetails.vendorName,
-                        bountyItemsDetail: bountyItemsDetail
-                      }
-                      attachment = dataHelper.parseVendorBountyDetails(vendorBountiesDetail)
-                      sendMessage(robot, res, attachment)
-
-                  , (err) ->
-                    --remainingIteration
+                , (err) ->
+                  --remainingIteration
         , (err) ->
-          -- remainingIteration
+          return
 
     else
       # command not recognized. Lists all available commands
@@ -385,6 +381,7 @@ getItem = (bot, itemHash) ->
       return deferred.reject()
 
     item = response.data.inventoryItem
+    console.log 'getItem success:'
     console.log "#{itemHash} = #{item.itemName} - #{item.itemDescription}"
     deferred.resolve(item)
 
