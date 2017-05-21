@@ -146,12 +146,11 @@ sendHelp = (robot, res) ->
   message += '*Activity*\n'
   message += '`activity` + one of the following:\n'
   for command in Constants.COMMANDS
-    message += "`- #{command}`\n"
+    message += "\t`#{command}`\n"
   # bounties
   message += '`bounties` + one of the following:\n'
   for command in Object.keys Constants.BOUNTY_VENDORS
-    message += "- `#{command}`\n"
-  message += "\n#{helpText}"
+    message += "\t`#{command}`\n"
 
   attachment =
     title: "Using the Weekly Bot"
