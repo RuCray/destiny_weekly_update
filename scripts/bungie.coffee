@@ -64,6 +64,7 @@ module.exports = (robot) ->
         getVendorSaleItemCategories(res, vendorHash).then (saleItemCategories) ->
           for category in saleItemCategories
             if category.categoryIndex in Constants.BOUNTIES_CATEGORY_INDICES
+              console.log category
               bountyItems.push category.salesItems...
               --remainingIteration
 
