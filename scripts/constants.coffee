@@ -88,7 +88,6 @@ module.exports =
     43,
     7,
     0,
-    12
   ]
 
   BOUNTY_VENDORS: {
@@ -99,7 +98,7 @@ module.exports =
     # queen: [ 1410745145 ],
     shiro: [ 2190824860 ],
     strike: [ 1990950 ],
-    trials: [ 1889676839 ]
+    # trials: [ 1889676839 ]
   }
 
   MATERIAL_VENDORS: [

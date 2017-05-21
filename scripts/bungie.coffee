@@ -64,17 +64,26 @@ module.exports = (robot) ->
         getVendorSaleItemCategories(res, vendorHash).then (saleItemCategories) ->
           for category in saleItemCategories
             if category.categoryIndex in Constants.BOUNTIES_CATEGORY_INDICES
-              console.log category
-              Array::push.apply bountyItems, category.saleItems
+              bountyItems.push category.saleItems...
               --remainingIteration
 
               if remainingIteration is 0
-                console.log 'bountyItems = '
-                console.log bountyItems
-                # getItem(res, item.itemHash).then (itemDetails) ->
-                #   return
-                # , (err) ->
-                #   return sendError(robot.res, err)
+                bountyItemsDetail = []
+                remainingIteration = bountyItems.length
+                for item in bountyItems
+                  getItem(res, item.itemHash).then (itemDetails) ->
+                    bountyItemsDetail.push {
+                      itemName: itemDetails.itemName,
+                      itemDescription: itemDetails.itemDescription,
+                    }
+                    --remainingIteration
+
+                    if remainingIteration is 0
+                      console.log "bountyItemsDetail ="
+                      console.log bountyItemsDetail
+
+                  , (err) ->
+                    --remainingIteration
 
         , (err) ->
           -- remainingIteration
