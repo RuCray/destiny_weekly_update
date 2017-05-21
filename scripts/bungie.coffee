@@ -36,16 +36,13 @@ module.exports = (robot) ->
     activityKey = Constants.ACTIVITY_KEYS[inputFirst]
     if activityKey
       getPublicWeeklyActivity(res, activityKey).then (activityDetails) ->
-        payload =
-          message: res.message
-          attachments: [dataHelper.parseActivityDetails(activityDetails)]
-        emitPayload(payload)
+        sendMessage(robot, res, [dataHelper.parseActivityDetails(activityDetails)])
       , (err) ->
         sendError(robot, res, err)
 
     else if inputFirst is 'vendor'
       for vendorHash in Constants.VENDORS
-        getVendorSaleItemCategories(res, vendorHash).then (saleItemCategories) ->
+        getVendorDetails(res, vendorHash).then (saleItemCategories) ->
           return
         , (err) ->
           sendError(robot, res, err)
@@ -61,8 +58,8 @@ module.exports = (robot) ->
       bountyItems = []
       remainingIteration = vendors.length
       for vendorHash in vendors
-        getVendorSaleItemCategories(res, vendorHash).then (saleItemCategories) ->
-          for category in saleItemCategories
+        getVendorDetails(res, vendorHash).then (vendorDetails) ->
+          for category in vendorDetails.saleItemCategories
             if category.categoryIndex in Constants.BOUNTIES_CATEGORY_INDICES
               bountyItems.push category.saleItems...
               --remainingIteration
@@ -79,12 +76,15 @@ module.exports = (robot) ->
                     --remainingIteration
 
                     if remainingIteration is 0
-                      console.log "bountyItemsDetail ="
-                      console.log bountyItemsDetail
+                      vendorBountiesDetail = {
+                        vendorName: vendorDetails.vendorName,
+                        bountyItemsDetail: bountyItemsDetail
+                      }
+                      attachment = dataHelper.parseVendorBountyDetails(vendorBountiesDetail)
+                      sendMessage(robot, res, attachment)
 
                   , (err) ->
                     --remainingIteration
-
         , (err) ->
           -- remainingIteration
 
@@ -153,13 +153,15 @@ sendHelp = (robot, res) ->
     text: message
     fallback: message
     mrkdwn_in: ["text"]
+
+  sendMessage(robot, res, attachment)
+
+sendMessage = (robot, res, attachment) ->
   payload =
     message: res.message
     attachments: attachment
-
   console.log 'Emitting payload:'
   console.log payload
-
   robot.emit 'slack-attachment', payload
 
 checkNetwork = (network) ->
@@ -335,11 +337,12 @@ parseActivityHash = (bot, activityHash) ->
 
   deferred.promise
 
-getVendorSaleItemCategories = (bot, vendorHash) ->
+getVendorDetails = (bot, vendorHash) ->
   deferred = new Deferred()
   endpoint = "Vendors/#{vendorHash}"
+  query = 'definitions=true'
 
-  makeRequest bot, endpoint, null, (err, response) ->
+  makeRequest bot, endpoint, query, (err, response) ->
     if err
       console.log 'Error getting vendor: ' + vendorHash
       console.log err
@@ -347,9 +350,20 @@ getVendorSaleItemCategories = (bot, vendorHash) ->
 
     if !response || !response.data || !response.data.saleItemCategories
       console.log 'Error getting vendor: ' + vendorHash
-      return deferred.reject(err)
+      return deferred.reject()
 
-    deferred.resolve(response.data.saleItemCategories)
+    if !response.definitions
+      || !response.definitions.vendorDetails
+      || !response.definitions.vendorDetails[vendorHash]
+      || !response.definitions.vendorDetails[vendorHash].vendorName
+        console.log 'Error getting vendor details: ' + vendorHash
+        return deferred.reject()
+
+    vendorDetails = {
+      vendorName: response.definitions.vendorDetails[vendorHash].vendorName,
+      salesItemCategories: response.data.saleItemCategories
+    }
+    deferred.resolve(vendorDetails)
 
   deferred.promise
 
@@ -361,12 +375,12 @@ getItem = (bot, itemHash) ->
     if err
       console.log 'Error getting item: ' + itemHash
       console.log err
-      return
+      return deferred.reject(err)
 
     if !response || !response.data || !response.data.inventoryItem
       console.log 'Error getting item: ' + itemHash
       console.log response.data.inventoryItem
-      return
+      return deferred.reject()
 
     item = response.data.inventoryItem
     console.log "#{itemHash} = #{item.itemName} - #{item.itemDescription}"
