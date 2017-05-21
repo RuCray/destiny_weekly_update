@@ -151,7 +151,7 @@ class DataHelper
 
     if message
       attachment['text'] = message
-      attachment['mrkdwn_in']: ['text']
+      attachment['mrkdwn_in'] = ['text']
 
     return attachment
 
