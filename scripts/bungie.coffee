@@ -1,5 +1,5 @@
 require('dotenv').load()
-request './string-utils.coffee'
+require './string-utils.coffee'
 
 Deferred = require('promise.coffee').Deferred
 Q = require('q')
