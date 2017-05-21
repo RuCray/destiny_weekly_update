@@ -140,14 +140,14 @@ class DataHelper
       attachment['author_name'] = activityDetails.displayName
 
     if activityDetails.activityDescription
-      message = "~#{activityDetails.activityDescription}~\n"
+      message = "_#{activityDetails.activityDescription}_\n"
 
     if activityDetails.modifiers
       message += '\n'
       for mod in activityDetails.modifiers
         for skull in mod.skulls
           message += "#{skull.displayName}\n"
-          message += "~#{skull.description}~\n"
+          message += "_#{skull.description}_\n"
 
     if message
       attachment['text'] = message
@@ -159,7 +159,7 @@ class DataHelper
     message = ''
     for bountyItem in vendorBountyDetails.bountyItemsDetail
         message += "#{bountyItem.itemName}\n"
-        message += "~#{bountyItem.itemDescription}~\n"
+        message += "_#{bountyItem.itemDescription}_\n"
 
     attachment =
       title: vendorBountyDetails.vendorName
