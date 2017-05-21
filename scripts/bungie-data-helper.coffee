@@ -130,15 +130,6 @@ class DataHelper
     activityDescription: activity.activityDescription
 
   'parseActivityDetails': (activityDetails) ->
-    modifiers = []
-    if activityDetails.modifiers
-      for mod in activityDetails.modifiers
-        for skull in mod.skulls
-          modifiers.push({
-              title: skull.displayName,
-              value: skull.description,
-              short: false
-          })
 
     title = if activityDetails.activityName then activityDetails.activityName else activityDetails.displayName
     attachment =
@@ -149,10 +140,34 @@ class DataHelper
       attachment['author_name'] = activityDetails.displayName
 
     if activityDetails.activityDescription
-      attachment['text'] = activityDetails.activityDescription
+      message = "_#{activityDetails.activityDescription}_\n"
 
-    if modifiers.length > 0
-      attachment['fields'] = modifiers
+    if activityDetails.modifiers
+      message += '\n'
+      for mod in activityDetails.modifiers
+        for skull in mod.skulls
+          message += "*#{skull.displayName}*\n"
+          message += "_#{skull.description}_\n"
+
+    if message
+      attachment['text'] = message
+      attachment['mrkdwn_in'] = ['text']
+
+    return attachment
+
+  'parseVendorBountyDetails': (vendorBountyDetails) ->
+    console.log vendorBountyDetails
+
+    message = ''
+    for bountyItem in vendorBountyDetails.bountyItemsDetail
+        message += "*#{bountyItem.itemName}*\n"
+        message += "_#{bountyItem.itemDescription}_\n"
+
+    attachment =
+      author_name: vendorBountyDetails.vendorName + ' Bounties'
+      fallback: vendorBountyDetails.vendorName
+      text: message
+      mrkdwn_in: ['text']
 
     return attachment
 

@@ -1,8 +1,10 @@
 require('dotenv').load()
+require './string-utils.coffee'
+
 Deferred = require('promise.coffee').Deferred
 Q = require('q')
 DataHelper = require './bungie-data-helper.coffee'
-constants = require './constants.coffee'
+Constants = require './constants.coffee'
 
 dataHelper = new DataHelper
 helpText = "Check out the full README here: https://github.com/RuCray/destiny_weekly_update"
@@ -26,33 +28,71 @@ module.exports = (robot) ->
 
     data = {}
 
-    # activity should always be last input
-    el = input[input.length-1].toLowerCase()
-    activityKey = constants.ACTIVITY_KEYS[el]
-    if !activityKey
-      message = "Available commands are:\n"
-      for command in constants.COMMANDS
-        message += "`#{command}`\n"
-      message += "\n#{helpText}"
-      sendError(robot, res, message)
-      return
-    else
-      data['activityKey'] = activityKey
-
-    getPublicWeeklyActivity(res, data.activityKey).then (activityDetails) ->
-
-      payload =
-        message: res.message
-        attachments: [dataHelper.parseActivityDetails(activityDetails)]
-
+    emitPayload = (payload) ->
       console.log 'Emitting payload:'
       console.log payload
-
       robot.emit('slack-attachment', payload)
 
-    ,(err) ->
+    # activity should always be last input
+    firstCommand = input[0].toLowerCase()
+    if 'activity'.startsWith firstCommand
+      if input.length < 2
+        return sendError(robot, res, 'Please specify the activity type.')
 
-      sendError(robot, res, err)
+      activityKey = Constants.ACTIVITY_KEYS[input[1]]
+      getPublicWeeklyActivity(res, activityKey).then (activityDetails) ->
+        sendMessage(robot, res, [dataHelper.parseActivityDetails(activityDetails)])
+      , (err) ->
+        sendError(robot, res, err)
+
+    else if 'vendor'.startsWith firstCommand
+      for vendorHash in Constants.VENDORS
+        getVendorDetails(res, vendorHash).then (vendorDetails) ->
+          return
+        , (err) ->
+          sendError(robot, res, err)
+
+    else if 'bounties'.startsWith firstCommand
+      if input.length < 2
+        return sendError(robot, res, 'Please specify which vendor you\'re looking up bounties for.')
+
+      vendors = Constants.BOUNTY_VENDORS[input[1]]
+      if !vendors
+        return sendError(robot, res, "Unable to locate vendor: #{input[1]}")
+
+      bountyItems = []
+      for vendorHash in vendors
+        getVendorDetails(res, vendorHash).then (vendorDetails) ->
+
+          for category in vendorDetails.saleItemCategories
+            if category.categoryIndex in Constants.BOUNTIES_CATEGORY_INDICES
+              bountyItems = category.saleItems
+              bountyItemsDetail = []
+              remainingIteration = bountyItems.length
+              for item in bountyItems
+                getItem(res, item.item.itemHash).then (itemDetails) ->
+                  bountyItemsDetail.push {
+                    itemName: itemDetails.itemName,
+                    itemDescription: itemDetails.itemDescription,
+                  }
+                  --remainingIteration
+
+                  if remainingIteration is 0
+                    vendorBountiesDetail = {
+                      vendorName: vendorDetails.vendorName,
+                      bountyItemsDetail: bountyItemsDetail
+                    }
+                    attachment = dataHelper.parseVendorBountyDetails(vendorBountiesDetail)
+                    sendMessage(robot, res, attachment)
+
+                , (err) ->
+                  --remainingIteration
+        , (err) ->
+          return
+
+    else
+      # command not recognized. Lists all available commands
+      return sendHelp(robot, res)
 
     # # interprets input based on length
     # # if 3 elements, assume: gamertag, network, bucket
@@ -100,10 +140,20 @@ module.exports = (robot) ->
 
 
 sendHelp = (robot, res) ->
+
   message = "Available commands are:\n"
-  for command in constants.COMMANDS
-    message += "`#{command}`\n"
-  message += "\n#{helpText}"
+  # activity
+  message += '\n'
+  message += '*Activity*\n'
+  message += '`activity` + one of the following:\n'
+  for command in Constants.COMMANDS
+    message += "\t`#{command}`\n"
+  # bounties
+  message += '\n'
+  message += '*Bounties*\n'
+  message += '`bounties` + one of the following:\n'
+  for command in Object.keys Constants.BOUNTY_VENDORS
+    message += "\t`#{command}`\n"
 
   attachment =
     title: "Using the Weekly Bot"
@@ -111,13 +161,15 @@ sendHelp = (robot, res) ->
     text: message
     fallback: message
     mrkdwn_in: ["text"]
+
+  sendMessage(robot, res, attachment)
+
+sendMessage = (robot, res, attachment) ->
   payload =
     message: res.message
     attachments: attachment
-
   console.log 'Emitting payload:'
   console.log payload
-
   robot.emit 'slack-attachment', payload
 
 checkNetwork = (network) ->
@@ -132,6 +184,9 @@ checkNetwork = (network) ->
 
 # Sends error message as DM in slack
 sendError = (robot, res, message) ->
+
+  message += '\nUse the `help` command for available commands.'
+
   console.log 'Sending error message:'
   console.log message
   robot.send {room: res.message.user.name, "unfurl_media": false}, message
@@ -256,7 +311,7 @@ getPublicWeeklyActivity = (bot, activityKey) ->
       console.log 'No activity details found'
       return deferred.reject('No activity details found')
 
-    if activityKey not in constants.FURTHER_DETAILS
+    if activityKey not in Constants.FURTHER_DETAILS
       console.log "Resolving activity details for #{activityKey}:"
       console.log activityDetails
       return deferred.resolve(activityDetails)
@@ -271,7 +326,7 @@ getPublicWeeklyActivity = (bot, activityKey) ->
       console.log combinedDetails
       deferred.resolve(combinedDetails)
 
-    ,(err) ->
+    , (err) ->
 
       console.log 'parseActivityHash failed:'
       console.log err
@@ -293,6 +348,59 @@ parseActivityHash = (bot, activityHash) ->
 
   deferred.promise
 
+getVendorDetails = (bot, vendorHash) ->
+  deferred = new Deferred()
+  endpoint = "Vendors/#{vendorHash}"
+  query = 'definitions=true'
+
+  makeRequest bot, endpoint, query, (err, response) ->
+    if err
+      console.log 'Error getting vendor: ' + vendorHash
+      console.log err
+      return deferred.reject(err)
+
+    if !response || !response.data || !response.data.saleItemCategories
+      console.log 'Error getting vendor: ' + vendorHash
+      return deferred.reject()
+
+    if !response.definitions or
+      !response.definitions.vendorDetails or
+      !response.definitions.vendorDetails[vendorHash] or
+      !response.definitions.vendorDetails[vendorHash].summary or
+      !response.definitions.vendorDetails[vendorHash].summary.vendorName
+        console.log 'Error getting vendor details: ' + vendorHash
+        return deferred.reject()
+
+    vendorDetails =
+      vendorName: response.definitions.vendorDetails[vendorHash].summary.vendorName,
+      saleItemCategories: response.data.saleItemCategories
+
+    deferred.resolve(vendorDetails)
+
+  deferred.promise
+
+getItem = (bot, itemHash) ->
+  deferred = new Deferred()
+  endpoint = "Manifest/InventoryItem/#{itemHash}"
+
+  makeRequest bot, endpoint, null, (err, response) ->
+    if err
+      console.log 'Error getting item: ' + itemHash
+      console.log err
+      return deferred.reject(err)
+
+    if !response || !response.data || !response.data.inventoryItem
+      console.log 'Error getting item: ' + itemHash
+      console.log response.data.inventoryItem
+      return deferred.reject()
+
+    item = response.data.inventoryItem
+    console.log 'getItem success:'
+    console.log "#{itemHash} = #{item.itemName} - #{item.itemDescription}"
+    deferred.resolve(item)
+
+  deferred.promise
+
 # Sends GET request from an endpoint, needs a success callback
 makeRequest = (bot, endpoint, params, callback) ->
   BUNGIE_API_KEY = process.env.BUNGIE_API_KEY
@@ -308,7 +416,6 @@ makeRequest = (bot, endpoint, params, callback) ->
     .get() (err, response, body) ->
 
       console.log "response.statusCode: #{response.statusCode}"
-
       if err
         console.log("error: #{err}")
         return callback(err)

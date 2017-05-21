@@ -81,3 +81,35 @@ module.exports =
     'Arc': '#80b3ff'
     'Solar': '#e68a00'
     'Void': '#400080'
+
+  BOUNTIES_CATEGORY_INDICES: [
+    16,
+    60,
+    43,
+    7,
+    0,
+  ]
+
+  BOUNTY_VENDORS: {
+    coe: [ 1998812735 ],
+    crucible: [ 3746647075, 3658200622 ],
+    # ib: [ 2610555297 ],
+    nightfall: [ 1990950 ],
+    # queen: [ 1410745145 ],
+    shiro: [ 2190824860 ],
+    strike: [ 1990950 ],
+    # trials: [ 1889676839 ]
+  }
+
+  MATERIAL_VENDORS: [
+    3611686524,
+    174528503,
+    1821699360,
+    1808244981
+  ]
+
+  FACTION_VENDORS: [
+    3611686524,
+    1821699360,
+    1808244981
+  ]
