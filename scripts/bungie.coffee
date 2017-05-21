@@ -148,6 +148,7 @@ sendHelp = (robot, res) ->
   for command in Constants.COMMANDS
     message += "\t`#{command}`\n"
   # bounties
+  message += '*Bounties*\n'
   message += '`bounties` + one of the following:\n'
   for command in Object.keys Constants.BOUNTY_VENDORS
     message += "\t`#{command}`\n"
