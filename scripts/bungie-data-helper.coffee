@@ -156,6 +156,8 @@ class DataHelper
     return attachment
 
   'parseVendorBountyDetails': (vendorBountyDetails) ->
+    console.log vendorBountyDetails
+
     message = ''
     for bountyItem in vendorBountyDetails.bountyItemsDetail
         message += "#{bountyItem.itemName}\n"
