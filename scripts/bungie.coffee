@@ -32,22 +32,25 @@ module.exports = (robot) ->
       robot.emit('slack-attachment', payload)
 
     # activity should always be last input
-    inputFirst = input[0].toLowerCase()
-    activityKey = Constants.ACTIVITY_KEYS[inputFirst]
-    if activityKey
+    firstCommand = input[0].toLowerCase()
+    if 'activity'.startsWith firstCommand
+      if input.length < 2
+        return sendError(robot, res, 'Please specify the activity type.')
+
+      activityKey = Constants.ACTIVITY_KEYS[input[1]]
       getPublicWeeklyActivity(res, activityKey).then (activityDetails) ->
         sendMessage(robot, res, [dataHelper.parseActivityDetails(activityDetails)])
       , (err) ->
         sendError(robot, res, err)
 
-    else if inputFirst is 'vendor'
+    else if 'vendor'.startsWith firstCommand
       for vendorHash in Constants.VENDORS
         getVendorDetails(res, vendorHash).then (vendorDetails) ->
           return
         , (err) ->
           sendError(robot, res, err)
 
-    else if inputFirst is 'bounties'
+    else if 'bounties'.startsWith firstCommand
       if input.length < 2
         return sendError(robot, res, 'Please specify which vendor you\'re looking up bounties for.')
 
@@ -88,8 +91,17 @@ module.exports = (robot) ->
     else
       # command not recognized. Lists all available commands
       message = "Available commands are:\n"
+
+      # activity
+      message += '`activity` +\n'
       for command in Constants.COMMANDS
         message += "`#{command}`\n"
+
+      # bounties
+      message += '`bounties` +\n'
+      for command in Object.keys Constants.BOUNTY_VENDORS
+        message += "`#{command}`\n"
+
       message += "\n#{helpText}"
       return sendError(robot, res, message)
 
@@ -173,6 +185,9 @@ checkNetwork = (network) ->
 
 # Sends error message as DM in slack
 sendError = (robot, res, message) ->
+
+  message += '\nUse the `help` command for available commands.'
+
   console.log 'Sending error message:'
   console.log message
   robot.send {room: res.message.user.name, "unfurl_media": false}, message
