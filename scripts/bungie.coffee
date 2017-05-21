@@ -60,7 +60,8 @@ module.exports = (robot) ->
       for vendorHash in vendors
         getVendorDetails(res, vendorHash).then (vendorDetails) ->
 
-          console.log vendorDetails.saleItemCategories
+          console.log 'vendorDetails ='
+          console.log vendorDetails
 
           for category in vendorDetails.saleItemCategories
             if category.categoryIndex in Constants.BOUNTIES_CATEGORY_INDICES
@@ -363,10 +364,10 @@ getVendorDetails = (bot, vendorHash) ->
         console.log 'Error getting vendor details: ' + vendorHash
         return deferred.reject()
 
-    vendorDetails = {
+    vendorDetails =
       vendorName: response.definitions.vendorDetails[vendorHash].summary.vendorName,
       salesItemCategories: response.data.saleItemCategories
-    }
+
     deferred.resolve(vendorDetails)
 
   deferred.promise
