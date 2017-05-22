@@ -139,8 +139,10 @@ class DataHelper
     if activityDetails.activityName
       attachment['author_name'] = activityDetails.displayName
 
+    message = ""
     if activityDetails.activityDescription
-      message = "_#{activityDetails.activityDescription}_\n"
+      activityDescription = activityDetails.activityDescription.split('\n').join('_\n_')
+      message += "_#{activityDescription}_\n"
 
     if activityDetails.modifiers
       message += '\n'
