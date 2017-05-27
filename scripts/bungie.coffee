@@ -97,8 +97,8 @@ module.exports = (robot) ->
       for vendorHash in vendors
         getVendorDetails(res, vendorHash).then (vendorDetails) ->
 
-          for category in vendorDetails.saleItemCategories when category.categoryTitle is 'Material Exchange'
-            console.log "#{vendorDetails.vendorName}: #{categories}"
+          category for category in vendorDetails.saleItemCategories when category.categoryTitle is 'Material Exchange'
+            console.log "#{vendorDetails.vendorName}: #{category}"
 
     else
       # command not recognized. Lists all available commands
