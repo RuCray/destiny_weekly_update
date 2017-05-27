@@ -1,4 +1,4 @@
-Request = require('Request')
+Request = require('request')
 Constants = require('./constants.coffee')
 
 class DataHelper
