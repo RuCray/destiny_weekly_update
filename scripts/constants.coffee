@@ -115,3 +115,6 @@ module.exports =
   ]
 
   ARTIFACT_VENDOR: 2190824863
+
+  SINGLE_STAT_MAX: 78
+  DUAL_STAT_MAX: 38

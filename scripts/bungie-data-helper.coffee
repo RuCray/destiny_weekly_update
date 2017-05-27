@@ -1,5 +1,5 @@
-request = require('request')
-constants = require('./constants.coffee')
+Request = require('Request')
+Constants = require('./constants.coffee')
 
 class DataHelper
   'serializeFromApi': (response) ->
@@ -25,11 +25,11 @@ class DataHelper
       #   itemStats.push s
 
       # to expand using a smaller list, match against EXTENDED_WEAPON_STATS
-      for extHash in constants.EXTENDED_WEAPON_STATS
+      for extHash in Constants.EXTENDED_WEAPON_STATS
         s = response.definitions.items[hash].stats[extHash]
         itemStats.push(s) if s?
 
-    statHashes = constants.STAT_HASHES
+    statHashes = Constants.STAT_HASHES
     for stat in itemStats when stat?.statHash of statHashes
         stats[statHashes[stat.statHash]] = stat.value
 
@@ -40,7 +40,7 @@ class DataHelper
     itemName: itemDefs.itemName
     itemDescription: itemDefs.itemDescription
     itemTypeName: itemDefs.itemTypeName
-    color: constants.DAMAGE_COLOR[damageTypeName]
+    color: Constants.DAMAGE_COLOR[damageTypeName]
     iconLink: prefix + iconSuffix
     itemLink: prefix + itemSuffix
     nodes: response.data.talentNodes
@@ -185,8 +185,11 @@ class DataHelper
 
   'parseArtifactItem': (artifactItem) ->
     message = artifactItem.perk.description
-    for stat in artifactItem.stats
-      message += "#{stat.name}: #{stat.value}\n"
+    message += '\n'
+    stats for stats in artifactItem.stats when stats.value > 0
+    console.log stats
+
+      # message += "#{stat.name}: #{stat.value}\n"
 
     attachment =
       author_name: artifactItem.itemName
