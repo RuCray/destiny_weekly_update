@@ -94,6 +94,7 @@ module.exports = (robot) ->
       vendors = Constants.MATERIAL_VENDORS
 
       materialExchangeItems = []
+      remainingIteration = vendors.length
       for vendorHash in vendors
         getVendorDetails(res, vendorHash).then (vendorDetails) ->
 
@@ -101,7 +102,21 @@ module.exports = (robot) ->
           exchangeItem = category.saleItems.pop()
           exchangeCost = exchangeItem.costs[0]
           getItem(res, exchangeCost.itemHash).then (itemDetails) ->
-            console.log vendorDetails.vendorName + ': ' + itemDetails.itemName + ' cost = ' + exchangeCost.value
+            materialExchangeItems.push {
+              faction: vendorDetails.vendorName
+              material: itemDetails.itemName
+              cost: exchangeCost.value
+            }
+            --remainingIteration
+
+            if remainingIteration is 0
+              attachment = dataHelper.parseMaterialExchangeItems(materialExchangeItems)
+              sendMessage(robot, res, attachment)
+
+          , (err) ->
+            --remainingIteration
+        , (err) ->
+          return
 
     else
       # command not recognized. Lists all available commands
