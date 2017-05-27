@@ -173,10 +173,10 @@ class DataHelper
   'parseMaterialExchangeItems': (materialExchangeItems) ->
     message = ''
     for exchangeItem in materialExchangeItems
-      message += "#{exchangeItem.faction}: #{exchangeItem.material} (#{exchangeItem.cost})\n"
+      message += "#{exchangeItem.faction}: *#{exchangeItem.material}* (_#{exchangeItem.cost}_)\n"
 
     attachment =
-      author_name: 'Material Exchanges'
+      author_name: 'Faction Vendor Material Exchange'
       fallback: message
       text: message
       mrkdwn_in: ['text']
