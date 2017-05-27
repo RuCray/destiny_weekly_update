@@ -130,7 +130,6 @@ class DataHelper
     activityDescription: activity.activityDescription
 
   'parseActivityDetails': (activityDetails) ->
-
     title = if activityDetails.activityName then activityDetails.activityName else activityDetails.displayName
     attachment =
       fallback: title
@@ -158,8 +157,6 @@ class DataHelper
     return attachment
 
   'parseVendorBountyDetails': (vendorBountyDetails) ->
-    console.log vendorBountyDetails
-
     message = ''
     for bountyItem in vendorBountyDetails.bountyItemsDetail
         message += "*#{bountyItem.itemName}*\n"
@@ -168,6 +165,19 @@ class DataHelper
     attachment =
       author_name: vendorBountyDetails.vendorName + ' Bounties'
       fallback: vendorBountyDetails.vendorName
+      text: message
+      mrkdwn_in: ['text']
+
+    return attachment
+
+  'parseMaterialExchangeItems': (materialExchangeItems) ->
+    message = ''
+    for exchangeItem in materialExchangeItems
+      message += "#{exchangeItem.faction}: *#{exchangeItem.material}* (_#{exchangeItem.cost}_)\n"
+
+    attachment =
+      author_name: 'Faction Vendor Material Exchange'
+      fallback: message
       text: message
       mrkdwn_in: ['text']
 

@@ -90,6 +90,34 @@ module.exports = (robot) ->
         , (err) ->
           return
 
+    else if 'material exchange'.startsWith firstCommand
+      vendors = Constants.MATERIAL_VENDORS
+
+      materialExchangeItems = []
+      remainingIteration = vendors.length
+      for vendorHash in vendors
+        getVendorDetails(res, vendorHash).then (vendorDetails) ->
+
+          category for category in vendorDetails.saleItemCategories when category.categoryTitle is 'Material Exchange'
+          exchangeItem = category.saleItems.pop()
+          exchangeCost = exchangeItem.costs[0]
+          getItem(res, exchangeCost.itemHash).then (itemDetails) ->
+            materialExchangeItems.push {
+              faction: vendorDetails.vendorName
+              material: itemDetails.itemName
+              cost: exchangeCost.value
+            }
+            --remainingIteration
+
+            if remainingIteration is 0
+              attachment = dataHelper.parseMaterialExchangeItems(materialExchangeItems)
+              sendMessage(robot, res, attachment)
+
+          , (err) ->
+            --remainingIteration
+        , (err) ->
+          return
+
     else
       # command not recognized. Lists all available commands
       return sendHelp(robot, res)
@@ -154,6 +182,10 @@ sendHelp = (robot, res) ->
   message += '`bounties` + one of the following:\n'
   for command in Object.keys Constants.BOUNTY_VENDORS
     message += "\t`#{command}`\n"
+  # factions
+  message += '\n'
+  message += '*Factions*\n'
+  message += '`material exchange`\n'
 
   attachment =
     title: "Using the Weekly Bot"
