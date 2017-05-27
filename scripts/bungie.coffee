@@ -99,8 +99,9 @@ module.exports = (robot) ->
 
           category for category in vendorDetails.saleItemCategories when category.categoryTitle is 'Material Exchange'
           exchangeItem = category.saleItems.pop()
-          getItem(res, exchangeItem.item.itemHash).then (itemDetails) ->
-            console.log vendorDetails.vendorName + ': ' + itemDetails
+          exchangeCost = exchangeItem.costs[0]
+          getItem(res, exchangeCost.itemHash).then (itemDetails) ->
+            console.log vendorDetails.vendorName + ': ' + itemDetails.itemName + ' cost = ' + exchangeCost.value
 
     else
       # command not recognized. Lists all available commands
