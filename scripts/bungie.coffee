@@ -118,6 +118,46 @@ module.exports = (robot) ->
         , (err) ->
           return
 
+    else if 'artifacts'.startsWith firstCommand
+      getVendorDetails(res, Constants.ARTIFACT_VENDOR).then (vendorDetails) ->
+        category for category in vendorDetails.saleItemCategories when category.categoryIndex is 6
+        artifactItems = []
+        for saleItem in category.saleItems
+
+          # item
+          itemHash = saleItem.item.itemHash
+          itemName = vendorDetails.definitions.items[itemHash].itemName
+
+          # stats
+          stats = []
+          for thisStat in saleItem.item.stats
+            if thisStat.value > 0
+              stat = {
+                name: Constants.STAT_HASHES[thisStat.statHash]
+                value: thisStat.value
+              }
+              stats.push stat
+
+          # perk
+          mainPerkHash = saleItem.item.perks[0].perkHash
+          mainPerkDef = vendorDetails.definitions.perks[mainPerkHash]
+          perk = {
+            name: mainPerkDef.displayName
+            description: mainPerkDef.displayDescription
+          }
+
+          artifactItems.push {
+            itemName: itemName
+            stats: stats
+            perk: perk
+          }
+
+        attachment = dataHelper.parseArtifactItems(artifactItems)
+        sendMessage(robot, res, attachment)
+
+      , (err) ->
+        return
+
     else
       # command not recognized. Lists all available commands
       return sendHelp(robot, res)
@@ -186,6 +226,10 @@ sendHelp = (robot, res) ->
   message += '\n'
   message += '*Factions*\n'
   message += '`material exchange`\n'
+  # artifacts
+  message += '\n'
+  message += '*Iron Lord Artifacts*\n'
+  message += '`artifacts`\n'
 
   attachment =
     title: "Using the Weekly Bot"
@@ -406,6 +450,7 @@ getVendorDetails = (bot, vendorHash) ->
     vendorDetails =
       vendorName: response.definitions.vendorDetails[vendorHash].summary.vendorName,
       saleItemCategories: response.data.saleItemCategories
+      definitions: response.definitions
 
     deferred.resolve(vendorDetails)
 

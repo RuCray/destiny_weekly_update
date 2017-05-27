@@ -1,5 +1,5 @@
-request = require('request')
-constants = require('./constants.coffee')
+Request = require('request')
+Constants = require('./constants.coffee')
 
 class DataHelper
   'serializeFromApi': (response) ->
@@ -25,11 +25,11 @@ class DataHelper
       #   itemStats.push s
 
       # to expand using a smaller list, match against EXTENDED_WEAPON_STATS
-      for extHash in constants.EXTENDED_WEAPON_STATS
+      for extHash in Constants.EXTENDED_WEAPON_STATS
         s = response.definitions.items[hash].stats[extHash]
         itemStats.push(s) if s?
 
-    statHashes = constants.STAT_HASHES
+    statHashes = Constants.STAT_HASHES
     for stat in itemStats when stat?.statHash of statHashes
         stats[statHashes[stat.statHash]] = stat.value
 
@@ -40,7 +40,7 @@ class DataHelper
     itemName: itemDefs.itemName
     itemDescription: itemDefs.itemDescription
     itemTypeName: itemDefs.itemTypeName
-    color: constants.DAMAGE_COLOR[damageTypeName]
+    color: Constants.DAMAGE_COLOR[damageTypeName]
     iconLink: prefix + iconSuffix
     itemLink: prefix + itemSuffix
     nodes: response.data.talentNodes
@@ -177,6 +177,33 @@ class DataHelper
 
     attachment =
       author_name: 'Faction Vendor Material Exchange'
+      fallback: message
+      text: message
+      mrkdwn_in: ['text']
+
+    return attachment
+
+  'parseArtifactItems': (artifactItems) ->
+    message = ''
+    for artifactItem in artifactItems
+      message += "*#{artifactItem.itemName}*\n"
+      message += "_#{artifactItem.perk.name}_\n"
+      message += "_#{artifactItem.perk.description}_\n"
+      message += '\n'
+      stats = artifactItem.stats.filter (stat) -> stat.value > 0
+      maxValue = if stats.length > 1 then Constants.DUAL_STAT_MAX else Constants.SINGLE_STAT_MAX
+      percentageTotal = 0
+      for stat in stats
+        percentage = stat.value / maxValue * 100
+        percentageTotal += percentage
+        message += "*#{stat.name}*: #{stat.value}/#{maxValue} (#{percentage.toFixed(0)}%)\n"
+
+      percentage = percentageTotal / stats.length
+      message += "*Overall percentage:* #{percentage.toFixed(0)}%\n"
+      message += '\n'
+
+    attachment =
+      author_name: 'Iron Lord Artifacts'
       fallback: message
       text: message
       mrkdwn_in: ['text']
