@@ -121,38 +121,38 @@ module.exports = (robot) ->
     else if 'artifacts'.startsWith firstCommand
       getVendorDetails(res, Constants.ARTIFACT_VENDOR).then (vendorDetails) ->
         category for category in vendorDetails.saleItemCategories when category.categoryIndex is 6
-          for artifactItem in category.saleItems
+        for saleItem in category.saleItems
 
-            # item
-            itemHash = artifactItem.item.itemHash
-            itemName = vendorDetails.definitions.items[itemHash].itemName
+          # item
+          itemHash = saleItem.item.itemHash
+          itemName = vendorDetails.definitions.items[itemHash].itemName
 
-            # stats
-            stats = []
-            for thisStat in artifactItem.item.stats
-              if thisStat.value > 0
-                stat = {
-                  name: Constants.STAT_HASHES[thisStat.statHash]
-                  value: thisStat.value
-                }
-                stats.push stat
+          # stats
+          stats = []
+          for thisStat in saleItem.item.stats
+            if thisStat.value > 0
+              stat = {
+                name: Constants.STAT_HASHES[thisStat.statHash]
+                value: thisStat.value
+              }
+              stats.push stat
 
-            # perk
-            mainPerkHash = artifactItem.item.perks[0].perkHash
-            mainPerkDef = vendorDetails.definitions.perks[mainPerkHash]
-            perk = {
-              name: mainPerkDef.displayName
-              description: mainPerkDef.displayDescription
-            }
+          # perk
+          mainPerkHash = saleItem.item.perks[0].perkHash
+          mainPerkDef = vendorDetails.definitions.perks[mainPerkHash]
+          perk = {
+            name: mainPerkDef.displayName
+            description: mainPerkDef.displayDescription
+          }
 
-            artifactItem = {
-              itemName: itemName
-              stats: stats
-              perk: perk
-            }
+          artifactItem = {
+            itemName: itemName
+            stats: stats
+            perk: perk
+          }
 
-            attachment = dataHelper.parseArtifactItem(artifactItem)
-            sendMessage(robot, res, attachment)
+          attachment = dataHelper.parseArtifactItem(artifactItem)
+          sendMessage(robot, res, attachment)
 
       , (err) ->
         return
