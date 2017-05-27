@@ -121,6 +121,7 @@ module.exports = (robot) ->
     else if 'artifacts'.startsWith firstCommand
       getVendorDetails(res, Constants.ARTIFACT_VENDOR).then (vendorDetails) ->
         category for category in vendorDetails.saleItemCategories when category.categoryIndex is 6
+        artifactItems = []
         for saleItem in category.saleItems
 
           # item
@@ -145,14 +146,14 @@ module.exports = (robot) ->
             description: mainPerkDef.displayDescription
           }
 
-          artifactItem = {
+          artifactItems.push {
             itemName: itemName
             stats: stats
             perk: perk
           }
 
-          attachment = dataHelper.parseArtifactItem(artifactItem)
-          sendMessage(robot, res, attachment)
+        attachment = dataHelper.parseArtifactItems(artifactItems)
+        sendMessage(robot, res, attachment)
 
       , (err) ->
         return
@@ -225,6 +226,10 @@ sendHelp = (robot, res) ->
   message += '\n'
   message += '*Factions*\n'
   message += '`material exchange`\n'
+  # artifacts
+  message += '\n'
+  message += '*Iron Lord Artifacts*\n'
+  message += '`artifacts`\n'
 
   attachment =
     title: "Using the Weekly Bot"

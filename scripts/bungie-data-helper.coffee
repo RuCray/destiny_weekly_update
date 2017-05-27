@@ -183,23 +183,28 @@ class DataHelper
 
     return attachment
 
-  'parseArtifactItem': (artifactItem) ->
-    message = artifactItem.perk.description
-    message += '\n'
-    stats = artifactItem.stats.filter (stat) -> stat.value > 0
-    maxValue = if stats.length > 1 then Constants.DUAL_STAT_MAX else Constants.SINGLE_STAT_MAX
-    percentageTotal = 0
-    for stat in stats
-      percentage = stat.value / maxValue * 100
-      percentageTotal += percentage
-      message += "#{stat.name}: #{stat.value} / #{maxValue} (#{percentage.toFixed(2)})\n"
+  'parseArtifactItems': (artifactItems) ->
+    message = ''
+    for artifactItem in artifactItems
+      message += "*#{artifactItem.itemName}*"
+      message += "_#{artifactItem.perk.name}_"
+      message += "_#{artifactItem.perk.description}_"
+      message += '\n'
+      message += '\n'
+      stats = artifactItem.stats.filter (stat) -> stat.value > 0
+      maxValue = if stats.length > 1 then Constants.DUAL_STAT_MAX else Constants.SINGLE_STAT_MAX
+      percentageTotal = 0
+      for stat in stats
+        percentage = stat.value / maxValue * 100
+        percentageTotal += percentage
+        message += "*#{stat.name}*: #{stat.value}/#{maxValue} (#{percentage.toFixed(0)}%)\n"
 
-    percentage = percentageTotal / stats.length
-    message += "Overall percentage: #{percentage.toFixed(2)}\n"
+      percentage = percentageTotal / stats.length
+      message += "*Overall percentage:* #{percentage.toFixed(0)%}\n"
+      message += '\n'
 
     attachment =
-      author_name: artifactItem.itemName
-      title: artifactItem.perk.name
+      author_name: 'Iron Lord Artifacts'
       fallback: message
       text: message
       mrkdwn_in: ['text']
