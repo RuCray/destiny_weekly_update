@@ -185,7 +185,7 @@ sendHelp = (robot, res) ->
   # factions
   message += '\n'
   message += '*Factions*\n'
-  message += '`material exchange\n'
+  message += '`material exchange`\n'
 
   attachment =
     title: "Using the Weekly Bot"
