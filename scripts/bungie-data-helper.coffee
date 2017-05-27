@@ -200,7 +200,7 @@ class DataHelper
         message += "*#{stat.name}*: #{stat.value}/#{maxValue} (#{percentage.toFixed(0)}%)\n"
 
       percentage = percentageTotal / stats.length
-      message += "*Overall percentage:* #{percentage.toFixed(0)%}\n"
+      message += "*Overall percentage:* #{percentage.toFixed(0)}%\n"
       message += '\n'
 
     attachment =
