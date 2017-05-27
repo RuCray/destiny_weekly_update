@@ -186,10 +186,16 @@ class DataHelper
   'parseArtifactItem': (artifactItem) ->
     message = artifactItem.perk.description
     message += '\n'
-    stats for stats in artifactItem.stats when stats.value > 0
-    console.log stats
+    stats = artifactItem.stats.filter (stat) -> stat.value > 0
+    maxValue = stats.length > 1 ? Constants.DUAL_STAT_MAX : Constants.SINGLE_STAT_MAX
+    percentageTotal = 0
+    for stat in stats
+      percentage = stat.value / maxValue * 100
+      percentageTotal += percentage
+      message += "#{stat.name}: #{stat.value} / #{maxValue} (#{percentage.toFixed(2)})\n"
 
-      # message += "#{stat.name}: #{stat.value}\n"
+    percentage = percentageTotal / stats.length
+    message += "Overall percentage: #{percentage.toFixed(2)}\n"
 
     attachment =
       author_name: artifactItem.itemName
