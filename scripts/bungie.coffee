@@ -90,6 +90,16 @@ module.exports = (robot) ->
         , (err) ->
           return
 
+    else if 'material exchange'.startsWith firstCommand
+      vendors = Constants.MATERIAL_VENDORS
+
+      materialExchangeItems = []
+      for vendorHash in vendors
+        getVendorDetails(res, vendorHash).then (vendorDetails) ->
+
+          categories = vendorDetails.saleItemCategories.filter (category) -> category.categoryTitle is 'material exchange'
+          console.log "#{vendorDetails.vendorName}: #{categories}"
+
     else
       # command not recognized. Lists all available commands
       return sendHelp(robot, res)
