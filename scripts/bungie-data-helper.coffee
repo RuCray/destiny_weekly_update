@@ -186,10 +186,9 @@ class DataHelper
   'parseArtifactItems': (artifactItems) ->
     message = ''
     for artifactItem in artifactItems
-      message += "*#{artifactItem.itemName}*"
-      message += "_#{artifactItem.perk.name}_"
-      message += "_#{artifactItem.perk.description}_"
-      message += '\n'
+      message += "*#{artifactItem.itemName}*\n"
+      message += "_#{artifactItem.perk.name}_\n"
+      message += "_#{artifactItem.perk.description}_\n"
       message += '\n'
       stats = artifactItem.stats.filter (stat) -> stat.value > 0
       maxValue = if stats.length > 1 then Constants.DUAL_STAT_MAX else Constants.SINGLE_STAT_MAX
