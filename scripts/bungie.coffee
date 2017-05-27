@@ -98,7 +98,9 @@ module.exports = (robot) ->
         getVendorDetails(res, vendorHash).then (vendorDetails) ->
 
           category for category in vendorDetails.saleItemCategories when category.categoryTitle is 'Material Exchange'
-          console.log "#{vendorDetails.vendorName}: #{category}"
+          exchangeItem = category.saleItems.pop()
+          getItem(res, item.item.itemHash).then (itemDetails) ->
+            console.log vendorDetails.vendorName + ': ' + itemDetails
 
     else
       # command not recognized. Lists all available commands
