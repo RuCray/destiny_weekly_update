@@ -113,3 +113,5 @@ module.exports =
     1821699360,
     1808244981
   ]
+
+  ARTIFACT_VENDOR: 2190824863

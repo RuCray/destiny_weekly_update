@@ -118,6 +118,45 @@ module.exports = (robot) ->
         , (err) ->
           return
 
+    else if 'artifacts'.startsWith firstCommand
+      getVendorDetails(res, Constants.ARTIFACT_VENDOR).then (vendorDetails) ->
+        category for category in vendorDetails.saleItemCategories when category.categoryIndex is 6
+          for artifactItem in category.saleItems
+
+            # item
+            itemHash = artifactItem.item.itemHash
+            itemName = vendorDetails.definitions.items[itemHash].itemName
+
+            # stats
+            stats = []
+            for thisStat in artifactItem.item.stats
+              if thisStat.value > 0
+                stat = {
+                  name: Constants.STAT_HASHES[thisStat.statHash]
+                  value: thisStat.value
+                }
+                stats.push stat
+
+            # perk
+            mainPerkHash = artifactItem.item.perks[0].perkHash
+            mainPerkDef = vendorDetails.definitions.perks[mainPerkHash]
+            perk = {
+              name: mainPerkDef.displayName
+              description: mainPerkDef.displayDescription
+            }
+
+            artifactItem = {
+              itemName: itemName
+              stats: stats
+              perk: perk
+            }
+
+            attachment = dataHelper.parseArtifactItem(artifactItem)
+            sendMessage(robot, res, attachment)
+
+      , (err) ->
+        return
+
     else
       # command not recognized. Lists all available commands
       return sendHelp(robot, res)
@@ -406,6 +445,7 @@ getVendorDetails = (bot, vendorHash) ->
     vendorDetails =
       vendorName: response.definitions.vendorDetails[vendorHash].summary.vendorName,
       saleItemCategories: response.data.saleItemCategories
+      definitions: response.definitions
 
     deferred.resolve(vendorDetails)
 
