@@ -33,3 +33,6 @@ You'll need to add the following [config variables](https://devcenter.heroku.com
 `HEROKU_URL=https://my-new-slackbot.herokuapp.com`  
 `HUBOT_SLACK_TOKEN=your-slack-token-here`  
 `BUNGIE_API_KEY=your-bungie-key-here`
+
+### License
+This bot is released under the [MIT](https://github.com/RuCray/destiny_weekly_update/blob/master/LICENSE.md) license.
